@@ -34,8 +34,8 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Default)]
 pub struct Boil {
-    config: Config,
-    cfg_path: PathBuf,
+    pub config: Config,
+    pub cfg_path: PathBuf,
 }
 
 impl Boil {
@@ -52,6 +52,14 @@ impl Boil {
         let config = Config::from(&cfg_path)?;
 
         Ok(Self { config, cfg_path })
+    }
+
+    pub fn _from_debug() -> BoilResult<Self> {
+        let cfg_path = [dirs::home_dir().unwrap(), Path::new("dev/rs-boil/tests/sample-config.toml").to_path_buf()].iter().collect::<PathBuf>();
+
+        let config = Config::from(&cfg_path)?;
+        println!("Here");
+        Ok(Self {config, cfg_path})
     }
 
     pub fn run(&mut self, cmd: Commands) -> BoilResult<()> {
@@ -134,11 +142,16 @@ impl Boil {
         &mut self.config.programs.0
     }
 
+    pub fn write(&self) -> BoilResult<()> {
+        self.config.write(&self.cfg_path)?;
+        Ok(())
+    }
+
 }
 
-fn default_dir() -> BoilResult<PathBuf> {
+pub fn default_dir() -> BoilResult<PathBuf> {
     if let Some(home) = dirs::config_dir() {
-        let path: PathBuf = [home.as_path(), Path::new("/.boil/config.toml")].iter().collect();
+        let path: PathBuf = [home.as_path(), Path::new(".boil/config.toml")].iter().collect();
 
         if !path.exists() {
             fs::File::create(path.to_owned())?;

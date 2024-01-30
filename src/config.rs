@@ -46,11 +46,12 @@ impl Config {
     pub fn from(path: &PathBuf) -> BoilResult<Self> {
         let config: Config;
 
-        if path.try_exists()? {
+        if path.try_exists().unwrap_or(false) {
             let content = fs::read_to_string(path)?;
             config = toml::from_str(&content)?;
         } else {
-            fs::File::create(path)?;
+            println!("here");
+            fs::File::create(path);
             config = Config::default();
         }
 

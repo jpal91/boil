@@ -1,0 +1,7 @@
+[programs]
+
+[defaults]
+proj_path = ""
+
+[temp]
+path = ""
