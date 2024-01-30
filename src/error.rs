@@ -10,7 +10,9 @@ pub enum BoilError {
     #[error("Unable to serialize TOML")]
     SeToml(#[from] toml::ser::Error),
     #[error("Unable to create config file")]
-    ConfigCreate
+    ConfigCreate,
+    #[error("Path already exists")]
+    PathExists,
 }
 
 pub type BoilResult<T> = Result<T, BoilError>;

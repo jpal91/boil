@@ -9,19 +9,27 @@ use crate::error::BoilResult;
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Config {
     #[serde(default)]
-    programs: Programs,
+    pub programs: Programs,
 
     #[serde(default)]
-    defaults: DefCfg
+    pub defaults: DefCfg,
+
+    #[serde(default)]
+    pub temp: Temp
 }
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct DefCfg {
-    proj_path: String
+    pub proj_path: PathBuf
 }
 
 #[derive(Serialize, Deserialize, Default, Debug)]
-pub struct Programs(HashMap<String, Program>);
+pub struct Temp {
+    pub path: PathBuf
+}
+
+#[derive(Serialize, Deserialize, Default, Debug)]
+pub struct Programs(pub HashMap<String, Program>);
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Program {

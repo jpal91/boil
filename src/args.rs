@@ -1,4 +1,4 @@
-
+use std::path::PathBuf;
 
 use clap::{Parser, Subcommand, Args};
 
@@ -25,9 +25,30 @@ pub struct AddArgs {
 
 #[derive(Args, Debug)]
 pub struct NewArgs {
-    temp: bool,
-    project: bool,
-    path: String,
-    prog_type: String,
-    name: Option<String>
+    #[arg(short, long)]
+    pub temp: bool,
+    #[arg(short='D', long)]
+    pub project: bool,
+    #[arg(short, long)]
+    pub path: Option<PathBuf>,
+    #[arg(short='T', long="type")]
+    pub prog_type: Option<String>,
+    #[arg(short, long)]
+    pub description: Option<String>,
+    #[arg(short='G', long, value_delimiter=',')]
+    pub tags: Option<Vec<String>>,
+    #[arg(required_unless_present="temp")]
+    pub name: Option<String>
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_args() {
+        let args = Cli::parse_from(["prog", "new", "-G", "one,two,three", "-t"]);
+        println!("{args:?}");
+        assert!(true)
+    }
 }
