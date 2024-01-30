@@ -1,5 +1,7 @@
 
+use std::path::PathBuf;
 use thiserror::Error;
+
 
 #[derive(Error, Debug)]
 pub enum BoilError {
@@ -13,6 +15,8 @@ pub enum BoilError {
     ConfigCreate,
     #[error("Path already exists")]
     PathExists,
+    #[error("{0} - Path is not valid to add as a program")]
+    InvalidPath(PathBuf)
 }
 
 pub type BoilResult<T> = Result<T, BoilError>;

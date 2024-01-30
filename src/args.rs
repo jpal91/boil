@@ -20,7 +20,12 @@ pub enum Commands {
 
 #[derive(Args, Debug)]
 pub struct AddArgs {
-    name: String
+    #[arg(short, long)]
+    pub description: Option<String>,
+    #[arg(short, long, value_delimiter=',')]
+    pub tags: Option<Vec<String>>,
+    pub name: String,
+    pub path: PathBuf,
 }
 
 #[derive(Args, Debug)]

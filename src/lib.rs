@@ -5,14 +5,32 @@ mod config;
 mod error;
 
 use std::env::temp_dir;
-use std::fs;
+use std::fs::{self, metadata};
 use std::path::{Path, PathBuf};
 
 use dirs;
 
-use config::{Config, Program, Temp};
-use args::{Commands, NewArgs};
+use config::{Config, Program, ProgMap, Temp};
+use args::{Commands, NewArgs, AddArgs};
 use error::{BoilResult, BoilError};
+use serde::{Deserialize, Serialize};
+
+// #[derive(Deserialize, Serialize)]
+// pub enum ProgTypes {
+//     Python,
+//     Rust,
+//     Bash
+// }
+
+// impl ProgTypes {
+//     fn ext(&self) -> String {
+//         match self {
+//             Self::Python => ".py".into(),
+//             Self::Rust => ".rs".into(),
+//             Self::Bash => ".sh".into()
+//         }
+//     }
+// }
 
 #[derive(Debug, Default)]
 pub struct Boil {
@@ -38,9 +56,26 @@ impl Boil {
 
     pub fn run(&mut self, cmd: Commands) -> BoilResult<()> {
         match cmd {
-            Commands::Add(c) => todo!(),
+            Commands::Add(c) => self.add_existing(c)?,
             Commands::New(c) => self.add_new(c)?
         };
+
+        Ok(())
+    }
+
+    fn add_existing(&mut self, args: AddArgs) -> BoilResult<()> {
+        let (description, tags, name, path) = 
+            (args.description, args.tags, args.name, args.path);
+        
+        let project = match metadata(path.to_owned())?.file_type() {
+            f if f.is_dir() => true,
+            f if f.is_file() => false,
+            _ => return Err(BoilError::InvalidPath(path.to_owned()))
+        };
+
+        let program = Program { name, description, project, path, tags };
+
+        self.config_mut().insert(program.name.to_owned(), program);
 
         Ok(())
     }
@@ -55,7 +90,7 @@ impl Boil {
         };
 
         if !args.temp {
-            self.config.programs.0.insert(program.name.to_owned(), program);
+            self.config_mut().insert(program.name.to_owned(), program);
         } else {
             self.config.temp = Temp{ path: program.path }
         }
@@ -93,6 +128,10 @@ impl Boil {
 
     fn get_new_name(&self) -> String {
         format!("boil{}", self.config.programs.0.len())
+    }
+
+    fn config_mut(&mut self) -> &mut ProgMap {
+        &mut self.config.programs.0
     }
 
 }

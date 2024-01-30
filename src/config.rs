@@ -28,6 +28,8 @@ pub struct Temp {
     pub path: PathBuf
 }
 
+pub type ProgMap = HashMap<String, Program>;
+
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Programs(pub HashMap<String, Program>);
 
@@ -42,9 +44,15 @@ pub struct Program {
 
 impl Config {
     pub fn from(path: &PathBuf) -> BoilResult<Self> {
-        let content = fs::read_to_string(path)?;
+        let config: Config;
 
-        let config = toml::from_str(&content)?;
+        if path.try_exists()? {
+            let content = fs::read_to_string(path)?;
+            config = toml::from_str(&content)?;
+        } else {
+            fs::File::create(path)?;
+            config = Config::default();
+        }
 
         Ok(config)
     }
