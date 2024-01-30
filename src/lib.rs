@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 use dirs;
 
-use config::{Config, Program};
+use config::{Config, Program, Temp};
 use args::{Commands, NewArgs};
 use error::{BoilResult, BoilError};
 
@@ -36,11 +36,13 @@ impl Boil {
         Ok(Self { config, cfg_path })
     }
 
-    pub fn add(&self, cmd: Commands) {
+    pub fn run(&mut self, cmd: Commands) -> BoilResult<()> {
         match cmd {
             Commands::Add(c) => todo!(),
-            Commands::New(c) => todo!()
-        }
+            Commands::New(c) => self.add_new(c)?
+        };
+
+        Ok(())
     }
 
     fn add_new(&mut self, args: NewArgs) -> BoilResult<()>{
@@ -54,6 +56,8 @@ impl Boil {
 
         if !args.temp {
             self.config.programs.0.insert(program.name.to_owned(), program);
+        } else {
+            self.config.temp = Temp{ path: program.path }
         }
 
         Ok(())
