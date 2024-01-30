@@ -26,7 +26,8 @@ pub struct AddArgs {
 #[derive(Args, Debug)]
 pub struct NewArgs {
     temp: bool,
-    directory: bool,
-    prog_type: Option<String>,
+    project: bool,
+    path: String,
+    prog_type: String,
     name: Option<String>
 }
