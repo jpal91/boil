@@ -4,13 +4,13 @@ use clap::{Parser, Subcommand, Args};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
-struct Cli {
+pub struct Cli {
     #[command(subcommand)]
     command: Commands
 }
 
 #[derive(Subcommand, Debug)]
-enum Commands {
+pub enum Commands {
     /// Create new script or project
     New(NewArgs),
     
@@ -19,12 +19,12 @@ enum Commands {
 }
 
 #[derive(Args, Debug)]
-struct AddArgs {
+pub struct AddArgs {
     name: String
 }
 
 #[derive(Args, Debug)]
-struct NewArgs {
+pub struct NewArgs {
     temp: bool,
     directory: bool,
     prog_type: Option<String>,

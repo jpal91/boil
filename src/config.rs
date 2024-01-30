@@ -6,16 +6,16 @@ use toml;
 
 use crate::error::BoilResult;
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Config {
     #[serde(default)]
     programs: Programs
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Programs(HashMap<String, Program>);
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Program {
     pub alias: String,
     pub project: bool,

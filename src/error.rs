@@ -8,7 +8,9 @@ pub enum BoilError {
     #[error("Unable to deserialize TOML")]
     DeToml(#[from] toml::de::Error),
     #[error("Unable to serialize TOML")]
-    SeToml(#[from] toml::ser::Error)
+    SeToml(#[from] toml::ser::Error),
+    #[error("Unable to create config file")]
+    ConfigCreate
 }
 
 pub type BoilResult<T> = Result<T, BoilError>;
