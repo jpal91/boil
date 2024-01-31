@@ -1,6 +1,7 @@
 #![allow(unused)]
 #![allow(dead_code)]
 pub mod args;
+mod defaults;
 mod config;
 mod error;
 
@@ -9,28 +10,13 @@ use std::fs::{self, metadata};
 use std::path::{Path, PathBuf};
 
 use dirs;
+use serde::{Deserialize, Serialize};
 
 use config::{Config, Program, ProgMap, Temp};
 use args::{Commands, NewArgs, AddArgs};
 use error::{BoilResult, BoilError};
-use serde::{Deserialize, Serialize};
+use defaults::default_config;
 
-// #[derive(Deserialize, Serialize)]
-// pub enum ProgTypes {
-//     Python,
-//     Rust,
-//     Bash
-// }
-
-// impl ProgTypes {
-//     fn ext(&self) -> String {
-//         match self {
-//             Self::Python => ".py".into(),
-//             Self::Rust => ".rs".into(),
-//             Self::Bash => ".sh".into()
-//         }
-//     }
-// }
 
 #[derive(Debug, Default)]
 pub struct Boil {
@@ -46,20 +32,12 @@ impl Boil {
     pub fn from(p: Option<PathBuf>) -> BoilResult<Self> {
         let cfg_path = match p {
             Some(pb) => pb,
-            None => default_dir()?,
+            None => default_config()?,
         };
 
         let config = Config::from(&cfg_path)?;
 
         Ok(Self { config, cfg_path })
-    }
-
-    pub fn _from_debug() -> BoilResult<Self> {
-        let cfg_path = [dirs::home_dir().unwrap(), Path::new("dev/rs-boil/tests/sample-config.toml").to_path_buf()].iter().collect::<PathBuf>();
-
-        let config = Config::from(&cfg_path)?;
-        println!("Here");
-        Ok(Self {config, cfg_path})
     }
 
     pub fn run(&mut self, cmd: Commands) -> BoilResult<()> {
@@ -147,20 +125,6 @@ impl Boil {
         Ok(())
     }
 
-}
-
-pub fn default_dir() -> BoilResult<PathBuf> {
-    if let Some(home) = dirs::config_dir() {
-        let path: PathBuf = [home.as_path(), Path::new(".boil/config.toml")].iter().collect();
-
-        if !path.exists() {
-            fs::File::create(path.to_owned())?;
-        };
-
-        Ok(path)
-    } else {
-        Err(BoilError::ConfigCreate)
-    }
 }
 
 fn get_file_ext(prog_type: &Option<String>) -> String {

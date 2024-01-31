@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use toml;
 
 use crate::error::BoilResult;
+use crate::defaults::default_proj_path;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Config {
@@ -18,9 +19,17 @@ pub struct Config {
     pub temp: Temp
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct DefCfg {
     pub proj_path: PathBuf
+}
+
+impl Default for DefCfg {
+    fn default() -> Self {
+        Self {
+            proj_path: default_proj_path()
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Default, Debug)]
@@ -50,7 +59,6 @@ impl Config {
             let content = fs::read_to_string(path)?;
             config = toml::from_str(&content)?;
         } else {
-            println!("here");
             fs::File::create(path);
             config = Config::default();
         }
