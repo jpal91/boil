@@ -55,6 +55,10 @@ impl Boil {
         let (description, tags, name, path) = 
             (args.description, args.tags, args.name, args.path);
         
+        if self.config.exists(&name) {
+            return Err(BoilError::NameExists(name))
+        }
+        
         let project = match metadata(path.to_owned())?.file_type() {
             f if f.is_dir() => true,
             f if f.is_file() => false,
@@ -97,6 +101,10 @@ impl Boil {
             Some(n) => n.to_owned(),
             None => self.get_new_name()
         };
+
+        if self.config.exists(&name) {
+            return Err(BoilError::NameExists(name))
+        }
         
         let mut path: PathBuf = match (args.temp, args.project, &args.path) {
             (true, true, _) => [temp_dir().as_path(), Path::new(&name)].iter().collect(),
@@ -138,7 +146,7 @@ impl Boil {
     }
 
     fn get_new_name(&self) -> String {
-        format!("boil{}", self.config.programs.0.len())
+        format!("boil{}", self.config.len())
     }
 
     fn config_mut(&mut self) -> &mut ProgMap {

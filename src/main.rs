@@ -1,6 +1,5 @@
 #![allow(unused)]
 use std::process::ExitCode;
-// use std::io::{self, Write};
 use std::env;
 use std::path::{PathBuf, Path};
 
@@ -18,7 +17,6 @@ fn main() -> ExitCode {
 
     if args.debug {
         println!("{:?}", args);
-        // set_dev_env_vars();
     }
 
     let mut boil = match Boil::from(None) {
@@ -41,14 +39,6 @@ fn main() -> ExitCode {
     
     ExitCode::SUCCESS
 }
-
-// fn set_dev_env_vars() {
-//     let cfg_path: PathBuf = [dirs::home_dir().unwrap().as_path(), Path::new("dev/rs-boil/tests/dev/sample-config.toml")].iter().collect();
-//     let def_dir: PathBuf = [dirs::home_dir().unwrap().as_path(), Path::new("dev/rs-boil/tests/dev/")].iter().collect();
-    
-//     env::set_var("BOIL_DEF_CONFIG", cfg_path.as_os_str());
-//     env::set_var("BOIL_PROJ_PATH", def_dir.as_os_str());
-// }
 
 #[cfg(test)]
 mod tests {

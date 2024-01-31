@@ -95,4 +95,12 @@ impl Config {
 
         Ok(())
     }
+
+    pub fn len(&self) -> usize {
+        self.programs.0.len()
+    }
+
+    pub fn exists(&self, key: &str) -> bool {
+        self.programs.0.get(key).is_some()
+    }
 }
