@@ -42,11 +42,33 @@ pub type ProgMap = HashMap<String, Program>;
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Programs(pub HashMap<String, Program>);
 
+#[derive(Serialize, Deserialize, Default, Debug)]
+pub enum ProgType {
+    Python,
+    Rust,
+    JavaScript,
+    #[default]
+    Bash
+}
+
+impl ProgType {
+    pub fn ext(&self) -> String {
+        match self {
+            Self::Python => ".py".into(),
+            Self::JavaScript => ".js".into(),
+            Self::Rust => ".rs".into(),
+            _ => ".sh".into()
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Program {
     pub name: String,
     pub project: bool,
     pub path: PathBuf,
+    #[serde(rename = "type")]
+    pub prog_type: ProgType,
     pub description: Option<String>,
     pub tags: Option<Vec<String>>
 }

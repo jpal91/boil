@@ -12,7 +12,7 @@ use std::path::{Path, PathBuf};
 use dirs;
 use serde::{Deserialize, Serialize};
 
-use config::{Config, Program, ProgMap, Temp};
+use config::{Config, Program, ProgMap, Temp, ProgType};
 use args::{Commands, NewArgs, AddArgs};
 use error::{BoilResult, BoilError};
 use defaults::default_config;
@@ -59,7 +59,9 @@ impl Boil {
             _ => return Err(BoilError::InvalidPath(path.to_owned()))
         };
 
-        let program = Program { name, description, project, path, tags };
+        let prog_type = get_prog_type(&args.prog_type);
+
+        let program = Program { name, description, project, prog_type, path, tags };
 
         self.config_mut().insert(program.name.to_owned(), program);
 
@@ -67,7 +69,7 @@ impl Boil {
     }
 
     fn add_new(&mut self, args: NewArgs) -> BoilResult<()>{
-        let program = self.parse_new(&args);
+        let program: Program = self.parse_new(&args);
 
         if !program.path.try_exists()? {
             fs::File::create(&program.path)?;
@@ -100,16 +102,17 @@ impl Boil {
             },
             (_, _, _) => self.config.defaults.proj_path.to_owned()
         };
-
+        
+        let prog_type = get_prog_type(&args.prog_type);
+        
         if !args.project {
-            let ext = get_file_ext(&args.prog_type);
-            path.push(ext)
+            path.push(prog_type.ext())
         };
 
         let description = args.description.to_owned();
         let tags = args.tags.to_owned();
 
-        Program { name, project: args.project, path, description, tags }
+        Program { name, project: args.project, prog_type, path, description, tags }
     }
 
     fn get_new_name(&self) -> String {
@@ -127,16 +130,16 @@ impl Boil {
 
 }
 
-fn get_file_ext(prog_type: &Option<String>) -> String {
+fn get_prog_type(prog_type: &Option<String>) -> ProgType {
     if let Some(p) = prog_type {
         match p.to_lowercase().as_str() {
-            "py" | "python" => ".py".into(),
-            "js" | "javascript" => ".js".into(),
-            "rs" | "rust" => ".rs".into(),
-            _ => ".sh".into()
+            "py" | "python" => ProgType::Python,
+            "js" | "javascript" => ProgType::JavaScript,
+            "rs" | "rust" => ProgType::Rust,
+            _ => ProgType::Bash
         }
     } else {
-        String::from(".sh")
+        ProgType::Bash
     }
 
 }

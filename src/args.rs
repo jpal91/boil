@@ -27,6 +27,8 @@ pub struct AddArgs {
     pub description: Option<String>,
     #[arg(short, long, value_delimiter=',')]
     pub tags: Option<Vec<String>>,
+    #[arg(short='T', long="type")]
+    pub prog_type: Option<String>,
     pub name: String,
     pub path: PathBuf,
 }
