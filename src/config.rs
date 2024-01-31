@@ -40,7 +40,7 @@ pub struct Temp {
 pub type ProgMap = HashMap<String, Program>;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
-pub struct Programs(pub HashMap<String, Program>);
+pub struct Programs(pub ProgMap);
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub enum ProgType {
