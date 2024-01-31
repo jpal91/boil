@@ -6,18 +6,19 @@ use std::path::{PathBuf, Path};
 
 use clap::Parser;
 use dirs;
+use dotenv::dotenv;
 
 use boil::Boil;
 use boil::args::{Cli, Commands};
 use boil::error::BoilResult;
 
-
 fn main() -> BoilResult<()> {
+    dotenv().ok();
     let args = Cli::parse();
 
     if args.debug {
         println!("{:?}", args);
-        set_dev_env_vars();
+        // set_dev_env_vars();
     }
 
     let mut boil = Boil::from(None)?;
@@ -28,13 +29,13 @@ fn main() -> BoilResult<()> {
     Ok(())
 }
 
-fn set_dev_env_vars() {
-    let cfg_path: PathBuf = [dirs::home_dir().unwrap().as_path(), Path::new("dev/rs-boil/tests/dev/sample-config.toml")].iter().collect();
-    let def_dir: PathBuf = [dirs::home_dir().unwrap().as_path(), Path::new("dev/rs-boil/tests/dev/")].iter().collect();
+// fn set_dev_env_vars() {
+//     let cfg_path: PathBuf = [dirs::home_dir().unwrap().as_path(), Path::new("dev/rs-boil/tests/dev/sample-config.toml")].iter().collect();
+//     let def_dir: PathBuf = [dirs::home_dir().unwrap().as_path(), Path::new("dev/rs-boil/tests/dev/")].iter().collect();
     
-    env::set_var("BOIL_DEF_CONFIG", cfg_path.as_os_str());
-    env::set_var("BOIL_PROJ_PATH", def_dir.as_os_str());
-}
+//     env::set_var("BOIL_DEF_CONFIG", cfg_path.as_os_str());
+//     env::set_var("BOIL_PROJ_PATH", def_dir.as_os_str());
+// }
 
 #[cfg(test)]
 mod tests {
@@ -51,7 +52,7 @@ mod tests {
 
     #[test]
     fn test_create_config() {
-        set_dev_env_vars();
+        // set_dev_env_vars();
         let boil = Boil::from(None).unwrap();
         boil.write();
 

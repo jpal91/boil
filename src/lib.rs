@@ -17,6 +17,7 @@ use config::{Config, Program, ProgMap, Temp, ProgType};
 use args::{Commands, NewArgs, AddArgs};
 use error::{BoilResult, BoilError};
 use defaults::default_config;
+use project::{create_program, create_project};
 
 
 #[derive(Debug, Default)]
@@ -74,9 +75,11 @@ impl Boil {
 
         if !program.path.try_exists()? {
             if program.project {
-                fs::create_dir_all(&program.path)?;
+                // fs::create_dir_all(&program.path)?;
+                create_project(&program.path, &program.prog_type)?;
             } else {
-                fs::File::create(&program.path)?;
+                // fs::File::create(&program.path)?;
+                create_program(&program.path, &program.prog_type)?;
             }
         } else {
             return Err(BoilError::PathExists)
