@@ -51,6 +51,8 @@ fn create_python_proj(path: &PathBuf) -> BoilResult<()> {
 }
 
 fn create_rust_project(path: &PathBuf) -> BoilResult<()> {
-    
+    Command::new("cargo")
+        .args(["new", path.to_str().unwrap()])
+        .output()?;
     Ok(())
 }

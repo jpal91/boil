@@ -1,5 +1,5 @@
 #![allow(unused)]
-// use std::process::ExitCode;
+use std::process::ExitCode;
 // use std::io::{self, Write};
 use std::env;
 use std::path::{PathBuf, Path};
@@ -12,7 +12,7 @@ use boil::Boil;
 use boil::args::{Cli, Commands};
 use boil::error::BoilResult;
 
-fn main() -> BoilResult<()> {
+fn main() -> ExitCode {
     dotenv().ok();
     let args = Cli::parse();
 
@@ -21,12 +21,25 @@ fn main() -> BoilResult<()> {
         // set_dev_env_vars();
     }
 
-    let mut boil = Boil::from(None)?;
+    let mut boil = match Boil::from(None) {
+        Ok(b) => b,
+        Err(e) => {
+            eprintln!("boil error: {e}");
+            return ExitCode::FAILURE
+        }
+    };
 
-    boil.run(args.command)?;
+    if let Err(e) = boil.run(args.command){
+        eprintln!("boil error: {e}");
+        return ExitCode::FAILURE
+    }
 
-    boil.write()?;
-    Ok(())
+    if let Err(e) = boil.write() {
+        eprintln!("boil error: {e}");
+        return ExitCode::FAILURE
+    }
+    
+    ExitCode::SUCCESS
 }
 
 // fn set_dev_env_vars() {

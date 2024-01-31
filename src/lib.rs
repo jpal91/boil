@@ -75,14 +75,12 @@ impl Boil {
 
         if !program.path.try_exists()? {
             if program.project {
-                // fs::create_dir_all(&program.path)?;
                 create_project(&program.path, &program.prog_type)?;
             } else {
-                // fs::File::create(&program.path)?;
                 create_program(&program.path, &program.prog_type)?;
             }
         } else {
-            return Err(BoilError::PathExists)
+            return Err(BoilError::PathExists(program.path))
         };
 
         if !args.temp {
