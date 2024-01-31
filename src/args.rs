@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use clap::{Parser, Subcommand, Args};
 
 #[derive(Parser, Debug)]
-#[command(author, version, about, long_about = None)]
+#[command(author, version, about, long_about = None, after_help="")]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
@@ -14,15 +14,19 @@ pub struct Cli {
 
 #[derive(Subcommand, Debug)]
 pub enum Commands {
-    /// Create new script or project
+    /// Create a new script or project
     New(NewArgs),
     
     /// Add new script or project to boil
-    Add(AddArgs)
+    Add(AddArgs),
+
+    /// Edit existing entries
+    Edit(EditArgs)
 }
 
 #[derive(Args, Debug)]
 pub struct AddArgs {
+
     /// Description of the program/project
     #[arg(short, long)]
     pub description: Option<String>,
@@ -73,6 +77,30 @@ pub struct NewArgs {
     pub name: Option<String>
 }
 
+#[derive(Args, Debug)]
+#[group(multiple=true)]
+pub struct EditArgs {
+    /// Edit description of entry
+    #[arg(short, long)]
+    pub description: Option<String>,
+
+    /// Add tags to entry
+    #[arg(short='T', long="add-tags", value_delimiter=',')]
+    pub tags: Option<Vec<String>>,
+
+    /// Remove tags from entry
+    #[arg(short='R', long="rm-tags", value_delimiter=',')]
+    pub rm_tags: Option<Vec<String>>,
+
+    /// Edit program type of entry
+    #[arg(short, long)]
+    pub prog_type: Option<String>,
+
+    /// Name of entry
+    #[arg(requires="EditArgs")]
+    pub name: String,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -83,4 +111,12 @@ mod tests {
         println!("{args:?}");
         assert!(true)
     }
+
+    // #[test]
+    // fn test_group() {
+    //     let args = Cli::parse_from(["prog", "edit"]);
+    //     match args.command {
+    //         Commands::Edit(e) => println!("{}", e.)
+    //     }
+    // }
 }

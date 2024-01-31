@@ -18,7 +18,9 @@ pub enum BoilError {
     #[error("{0} - Path is not valid to add as a program")]
     InvalidPath(PathBuf),
     #[error("Program with name '{0}' already exists")]
-    NameExists(String)
+    NameExists(String),
+    #[error("No entry found for '{0}' in config")]
+    NotFound(String)
 }
 
 pub type BoilResult<T> = Result<T, BoilError>;

@@ -14,7 +14,7 @@ use dirs;
 use serde::{Deserialize, Serialize};
 
 use config::{Config, Program, ProgMap, Temp, ProgType};
-use args::{Commands, NewArgs, AddArgs};
+use args::{Commands, NewArgs, AddArgs, EditArgs};
 use error::{BoilResult, BoilError};
 use defaults::default_config;
 use project::{create_program, create_project};
@@ -45,7 +45,8 @@ impl Boil {
     pub fn run(&mut self, cmd: Commands) -> BoilResult<()> {
         match cmd {
             Commands::Add(c) => self.add_existing(c)?,
-            Commands::New(c) => self.add_new(c)?
+            Commands::New(c) => self.add_new(c)?,
+            Commands::Edit(c) => return Ok(())
         };
 
         Ok(())
@@ -143,6 +144,37 @@ impl Boil {
         let tags = args.tags.to_owned();
 
         Ok(Program { name, project: args.project, prog_type, path, description, tags })
+    }
+
+    fn edit(&mut self, args: EditArgs) -> BoilResult<()> {
+        if !self.config.exists(&args.name) {
+            return Err(BoilError::NotFound(args.name))
+        }
+        
+        let entry: &mut Program = self.config.get_mut(&args.name);
+
+        if let Some(d) = args.description {
+            entry.description = Some(d);
+        };
+
+        if let Some(t) = args.tags {
+            if let Some(ref mut tags) = entry.tags {
+                tags.extend(t);
+            } else {
+                entry.tags = Some(t);
+            }
+        };
+
+        if let Some(rm) = args.rm_tags {
+            if let Some(ref mut tags) = entry.tags {
+                entry.tags = Some(tags
+                    .iter()
+                    .filter(|&x| !rm.contains(x))
+                    .map(|x| x.to_string())
+                    .collect())
+            }
+        }
+        Ok(())
     }
 
     fn get_new_name(&self) -> String {

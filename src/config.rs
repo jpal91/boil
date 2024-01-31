@@ -103,4 +103,8 @@ impl Config {
     pub fn exists(&self, key: &str) -> bool {
         self.programs.0.get(key).is_some()
     }
+
+    pub fn get_mut(&mut self, key: &str) -> &mut Program {
+        self.programs.0.get_mut(key).unwrap()
+    }
 }
