@@ -1,4 +1,6 @@
 #![allow(unused)]
+// use std::process::ExitCode;
+// use std::io::{self, Write};
 use std::env;
 use std::path::{PathBuf, Path};
 
@@ -6,19 +8,24 @@ use clap::Parser;
 use dirs;
 
 use boil::Boil;
-use boil::args::Cli;
+use boil::args::{Cli, Commands};
+use boil::error::BoilResult;
 
 
-fn main() {
+fn main() -> BoilResult<()> {
     let args = Cli::parse();
 
     if args.debug {
+        println!("{:?}", args);
         set_dev_env_vars();
     }
 
-    let boil = Boil::from(None).unwrap();
+    let mut boil = Boil::from(None)?;
 
-    boil.write();
+    boil.run(args.command)?;
+
+    boil.write()?;
+    Ok(())
 }
 
 fn set_dev_env_vars() {
@@ -51,4 +58,5 @@ mod tests {
         assert_eq!(boil.cfg_path, [dirs::home_dir().unwrap(), Path::new("dev/rs-boil/tests/dev/sample-config.toml").to_path_buf()].iter().collect::<PathBuf>());
         assert!(boil.cfg_path.exists());
     }
+
 }

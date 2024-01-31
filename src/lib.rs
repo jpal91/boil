@@ -3,7 +3,8 @@
 pub mod args;
 mod defaults;
 mod config;
-mod error;
+pub mod error;
+mod project;
 
 use std::env::temp_dir;
 use std::fs::{self, metadata};
@@ -69,10 +70,14 @@ impl Boil {
     }
 
     fn add_new(&mut self, args: NewArgs) -> BoilResult<()>{
-        let program: Program = self.parse_new(&args);
+        let program: Program = self.parse_new(&args)?;
 
         if !program.path.try_exists()? {
-            fs::File::create(&program.path)?;
+            if program.project {
+                fs::create_dir_all(&program.path)?;
+            } else {
+                fs::File::create(&program.path)?;
+            }
         } else {
             return Err(BoilError::PathExists)
         };
@@ -86,7 +91,7 @@ impl Boil {
         Ok(())
     }
 
-    fn parse_new(&self, args: &NewArgs) -> Program {
+    fn parse_new(&self, args: &NewArgs) -> BoilResult<Program> {
         let name = match &args.name {
             Some(n) => n.to_owned(),
             None => self.get_new_name()
@@ -95,24 +100,40 @@ impl Boil {
         let mut path: PathBuf = match (args.temp, args.project, &args.path) {
             (true, true, _) => [temp_dir().as_path(), Path::new(&name)].iter().collect(),
             (true, false, _) => temp_dir(),
-            (false, true, p) => {
+            (false, proj, Some(p)) => {
+                let mut dir_path: PathBuf;
+
+                if proj && p.extension().is_some() {
+                    return Err(BoilError::InvalidPath(p.to_path_buf()))
+                }
+
+                if p.is_absolute() {
+                    dir_path = p.to_path_buf();
+                } else {
+                    dir_path = self.config.defaults.proj_path.to_owned();
+                    dir_path.push(p.to_path_buf());
+                }
+                dir_path
+            },
+            (false, true, None) => {
                 let mut dir_path = self.config.defaults.proj_path.to_owned();
                 dir_path.push(Path::new(&name));
                 dir_path
             },
-            (_, _, _) => self.config.defaults.proj_path.to_owned()
+            (false, false, None) => self.config.defaults.proj_path.to_owned()
         };
         
         let prog_type = get_prog_type(&args.prog_type);
         
         if !args.project {
-            path.push(prog_type.ext())
+            path.push(&name);
+            path.set_extension(prog_type.ext());
         };
 
         let description = args.description.to_owned();
         let tags = args.tags.to_owned();
 
-        Program { name, project: args.project, prog_type, path, description, tags }
+        Ok(Program { name, project: args.project, prog_type, path, description, tags })
     }
 
     fn get_new_name(&self) -> String {

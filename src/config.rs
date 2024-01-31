@@ -54,10 +54,10 @@ pub enum ProgType {
 impl ProgType {
     pub fn ext(&self) -> String {
         match self {
-            Self::Python => ".py".into(),
-            Self::JavaScript => ".js".into(),
-            Self::Rust => ".rs".into(),
-            _ => ".sh".into()
+            Self::Python => "py".into(),
+            Self::JavaScript => "js".into(),
+            Self::Rust => "rs".into(),
+            _ => "sh".into()
         }
     }
 }
