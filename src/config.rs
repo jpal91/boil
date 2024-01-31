@@ -52,6 +52,19 @@ pub enum ProgType {
 }
 
 impl ProgType {
+    pub fn new() -> Self {
+        Self::default()
+    }
+    
+    pub fn from_string(prog_type: &str) -> Self {
+        match prog_type.to_lowercase().as_str() {
+            "py" | "python" => ProgType::Python,
+            "js" | "javascript" => ProgType::JavaScript,
+            "rs" | "rust" => ProgType::Rust,
+            _ => ProgType::Bash
+        }
+    }
+    
     pub fn ext(&self) -> String {
         match self {
             Self::Python => "py".into(),

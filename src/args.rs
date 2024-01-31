@@ -78,27 +78,40 @@ pub struct NewArgs {
 }
 
 #[derive(Args, Debug)]
-#[group(multiple=true)]
 pub struct EditArgs {
+    #[command(flatten)]
+    pub eopts: EditOptsGroup,
+
+    /// Name of entry
+    #[arg(requires="EditOptsGroup")]
+    pub name: String,
+}
+
+#[derive(Args, Debug)]
+#[group(multiple=true)]
+pub struct EditOptsGroup {
     /// Edit description of entry
+    /// 
+    /// Ex. -d "My cool app" | --description="My Cool app"
     #[arg(short, long)]
     pub description: Option<String>,
 
-    /// Add tags to entry
-    #[arg(short='T', long="add-tags", value_delimiter=',')]
+    /// Add list of tags to entry with ',' delimiter
+    /// 
+    /// Ex. -t one,two,three | --add-tags=one,two,three
+    #[arg(short='t', long="add-tags", value_delimiter=',')]
     pub tags: Option<Vec<String>>,
 
     /// Remove tags from entry
+    /// 
+    /// Same formatting as 't'. Any tags not found in entry will be
+    /// ignored.
     #[arg(short='R', long="rm-tags", value_delimiter=',')]
     pub rm_tags: Option<Vec<String>>,
 
     /// Edit program type of entry
     #[arg(short, long)]
     pub prog_type: Option<String>,
-
-    /// Name of entry
-    #[arg(requires="EditArgs")]
-    pub name: String,
 }
 
 #[cfg(test)]

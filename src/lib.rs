@@ -46,7 +46,7 @@ impl Boil {
         match cmd {
             Commands::Add(c) => self.add_existing(c)?,
             Commands::New(c) => self.add_new(c)?,
-            Commands::Edit(c) => return Ok(())
+            Commands::Edit(c) => self.edit(c)?
         };
 
         Ok(())
@@ -66,7 +66,10 @@ impl Boil {
             _ => return Err(BoilError::InvalidPath(path.to_owned()))
         };
 
-        let prog_type = get_prog_type(&args.prog_type);
+        let prog_type = match &args.prog_type {
+            Some(p) => ProgType::from_string(p),
+            None => ProgType::new()
+        };
 
         let program = Program { name, description, project, prog_type, path, tags };
 
@@ -133,7 +136,10 @@ impl Boil {
             (false, false, None) => self.config.defaults.proj_path.to_owned()
         };
         
-        let prog_type = get_prog_type(&args.prog_type);
+        let prog_type = match &args.prog_type {
+            Some(p) => ProgType::from_string(p),
+            None => ProgType::new()
+        };
         
         if !args.project {
             path.push(&name);
@@ -153,11 +159,11 @@ impl Boil {
         
         let entry: &mut Program = self.config.get_mut(&args.name);
 
-        if let Some(d) = args.description {
+        if let Some(d) = args.eopts.description {
             entry.description = Some(d);
         };
 
-        if let Some(t) = args.tags {
+        if let Some(t) = args.eopts.tags {
             if let Some(ref mut tags) = entry.tags {
                 tags.extend(t);
             } else {
@@ -165,7 +171,7 @@ impl Boil {
             }
         };
 
-        if let Some(rm) = args.rm_tags {
+        if let Some(rm) = args.eopts.rm_tags {
             if let Some(ref mut tags) = entry.tags {
                 entry.tags = Some(tags
                     .iter()
@@ -173,6 +179,10 @@ impl Boil {
                     .map(|x| x.to_string())
                     .collect())
             }
+        }
+
+        if let Some(p) = args.eopts.prog_type {
+            entry.prog_type = ProgType::from_string(&p);
         }
         Ok(())
     }
@@ -192,16 +202,3 @@ impl Boil {
 
 }
 
-fn get_prog_type(prog_type: &Option<String>) -> ProgType {
-    if let Some(p) = prog_type {
-        match p.to_lowercase().as_str() {
-            "py" | "python" => ProgType::Python,
-            "js" | "javascript" => ProgType::JavaScript,
-            "rs" | "rust" => ProgType::Rust,
-            _ => ProgType::Bash
-        }
-    } else {
-        ProgType::Bash
-    }
-
-}
