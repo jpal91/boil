@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand, Args};
+use prettytable::{Table, Row, Cell, row};
+
+use crate::error::{BoilResult, BoilError};
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None, after_help="")]
@@ -119,8 +122,44 @@ pub struct EditOptsGroup {
 
 #[derive(Args, Debug)]
 pub struct ListArgs {
+    #[arg(long, value_delimiter=',', default_value="n,p,P,t,d,T")]
+    pub format: Option<Vec<String>>,
     pub name: String
 }
+
+pub enum ListOpts {
+    Name,
+    Path,
+    Project,
+    Type,
+    Description,
+    Tags,
+}
+
+impl ListArgs {
+    pub fn get_opts(&self) -> BoilResult<Vec<ListOpts>> {
+        let opts = self.format.as_ref().unwrap();
+        let mut header: Vec<ListOpts> = vec![];
+        
+        for opt in opts.iter() {
+            let o = match opt.as_str() {
+                "n" | "name" => ListOpts::Name,
+                "p" | "path" => ListOpts::Path,
+                "P" | "project" => ListOpts::Project,
+                "t" | "type" => ListOpts::Type,
+                "d" | "description" => ListOpts::Description,
+                "T" | "tags" => ListOpts::Tags,
+                f => return Err(BoilError::ListFormat(f.to_string()))
+            };
+            header.push(o);
+        }
+
+        Ok(header)
+    }
+}
+
+
+
 
 #[cfg(test)]
 mod tests {

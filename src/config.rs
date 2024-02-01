@@ -9,6 +9,7 @@ use prettytable::{Table, Row, Cell, row};
 
 use crate::error::BoilResult;
 use crate::defaults::default_proj_path;
+use crate::args::ListOpts;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Config {
@@ -45,6 +46,17 @@ pub type ProgMap = HashMap<String, Program>;
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Programs(pub ProgMap);
 
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Program {
+    pub name: String,
+    pub project: bool,
+    pub path: PathBuf,
+    #[serde(rename = "type")]
+    pub prog_type: ProgType,
+    pub description: Option<String>,
+    pub tags: Option<Vec<String>>
+}
+
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub enum ProgType {
     Python,
@@ -78,16 +90,7 @@ impl ProgType {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Program {
-    pub name: String,
-    pub project: bool,
-    pub path: PathBuf,
-    #[serde(rename = "type")]
-    pub prog_type: ProgType,
-    pub description: Option<String>,
-    pub tags: Option<Vec<String>>
-}
+
 
 impl Config {
     pub fn from(path: &PathBuf) -> BoilResult<Self> {
@@ -128,12 +131,58 @@ impl Config {
         self.programs.0.iter()
     }
 
-    pub fn list(&self) {
+    pub fn list(&self, opts: Vec<ListOpts>) {
         let mut table = Table::new();
-        table.add_row(row![b->"Name", b->"Project", b->"Description"]);
+        let mut first_row: Vec<Cell> = vec![];
+        
+        for opt in opts.iter() {
+            let o = match opt {
+                ListOpts::Name => Cell::new("Name").style_spec("b"),
+                ListOpts::Description => Cell::new("Description").style_spec("b"),
+                ListOpts::Path => Cell::new("Path").style_spec("b"),
+                ListOpts::Project => Cell::new("Project").style_spec("b"),
+                ListOpts::Tags => Cell::new("Tags").style_spec("b"),
+                ListOpts::Type => Cell::new("Type").style_spec("b")
+            };
+            first_row.push(o);
+        };
+
+        table.add_row(Row::new(first_row));
         
         for (_, v) in self.iter() {
-            table.add_row(row![Fbb->capitalize!(v.name.to_owned()), v.project, v.description.as_ref().unwrap()]);
+            let mut row: Vec<Cell> = vec![];
+            
+            for opt in opts.iter() {
+                let o = match opt {
+                    ListOpts::Name => Cell::new(&capitalize!(v.name.to_owned())).style_spec("Fbb"),
+                    ListOpts::Description => Cell::new(v.description.as_ref().unwrap()),
+                    ListOpts::Path => Cell::new(v.path.to_str().unwrap()).style_spec("b"),
+                    ListOpts::Project => {
+                        if v.project {
+                            Cell::new("T").style_spec("bFg")
+                        } else {
+                            Cell::new("F").style_spec("bFr")
+                        }
+                    },
+                    ListOpts::Tags => {
+                        if let Some(t) = &v.tags {
+                            Cell::new(
+                                t.iter()
+                                .map(|x| capitalize!(x.to_owned()))
+                                .collect::<Vec<String>>()
+                                .join(", ")
+                                .as_str()
+                            )
+                        } else {
+                            Cell::new("None").style_spec("b")
+                        }
+                        
+                    },
+                    ListOpts::Type => Cell::new(&format!("{:?}", v.prog_type)).style_spec("b")
+                };
+                row.push(o);
+            }
+            table.add_row(Row::new(row));
         };
 
         table.printstd();

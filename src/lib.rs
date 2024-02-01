@@ -192,8 +192,8 @@ impl Boil {
         if !self.config.exists(&args.name) {
             return Err(BoilError::NotFound(args.name))
         }
-
-        self.config.list();
+        let opts = args.get_opts()?;
+        self.config.list(opts);
         Ok(())
     }
 

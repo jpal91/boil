@@ -20,7 +20,9 @@ pub enum BoilError {
     #[error("Program with name '{0}' already exists")]
     NameExists(String),
     #[error("No entry found for '{0}' in config")]
-    NotFound(String)
+    NotFound(String),
+    #[error("Unknown format option - '{0}'")]
+    ListFormat(String)
 }
 
 pub type BoilResult<T> = Result<T, BoilError>;
