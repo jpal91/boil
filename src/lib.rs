@@ -5,6 +5,8 @@ mod defaults;
 mod config;
 pub mod error;
 mod project;
+pub mod table;
+pub mod utils;
 
 use std::env::temp_dir;
 use std::fs::{self, metadata};
@@ -18,6 +20,7 @@ use args::{Commands, NewArgs, AddArgs, EditArgs, ListArgs};
 use error::{BoilResult, BoilError};
 use defaults::default_config;
 use project::{create_program, create_project};
+use table::BoilTable;
 
 
 #[derive(Debug, Default)]
@@ -192,8 +195,10 @@ impl Boil {
         if !self.config.exists(&args.name) {
             return Err(BoilError::NotFound(args.name))
         }
-        let opts = args.get_opts()?;
-        self.config.list(opts);
+        // let opts = args.get_opts()?;
+        // self.config.list(opts);
+        let mut table = BoilTable::from_args(args)?;
+        table.display(self.config.values());
         Ok(())
     }
 

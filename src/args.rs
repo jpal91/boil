@@ -122,8 +122,10 @@ pub struct EditOptsGroup {
 
 #[derive(Args, Debug)]
 pub struct ListArgs {
-    #[arg(long, value_delimiter=',', default_value="n,p,P,t,d,T")]
+    #[arg(long, value_delimiter=',', require_equals=true, default_value="n,p,P,t,d,T")]
     pub format: Option<Vec<String>>,
+    #[arg(long, value_delimiter=',', require_equals=true)]
+    pub sort: Option<Vec<String>>,
     pub name: String
 }
 
@@ -135,6 +137,8 @@ pub enum ListOpts {
     Description,
     Tags,
 }
+
+pub struct SortOpt(pub ListOpts, pub u8);
 
 impl ListArgs {
     pub fn get_opts(&self) -> BoilResult<Vec<ListOpts>> {

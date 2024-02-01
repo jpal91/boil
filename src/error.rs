@@ -22,7 +22,9 @@ pub enum BoilError {
     #[error("No entry found for '{0}' in config")]
     NotFound(String),
     #[error("Unknown format option - '{0}'")]
-    ListFormat(String)
+    ListFormat(String),
+    #[error("Unknown sort option - '{0}'")]
+    SortFormat(String)
 }
 
 pub type BoilResult<T> = Result<T, BoilError>;

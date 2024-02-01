@@ -46,7 +46,7 @@ pub type ProgMap = HashMap<String, Program>;
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Programs(pub ProgMap);
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Program {
     pub name: String,
     pub project: bool,
@@ -57,7 +57,7 @@ pub struct Program {
     pub tags: Option<Vec<String>>
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub enum ProgType {
     Python,
     Rust,
@@ -129,6 +129,10 @@ impl Config {
 
     pub fn iter(&self) -> Iter<String, Program> {
         self.programs.0.iter()
+    }
+
+    pub fn values(&self) -> Vec<Program> {
+        self.programs.0.values().cloned().collect()
     }
 
     pub fn list(&self, opts: Vec<ListOpts>) {
