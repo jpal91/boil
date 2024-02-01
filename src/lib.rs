@@ -192,11 +192,6 @@ impl Boil {
     }
 
     fn list(&self, mut args: ListArgs) -> BoilResult<()> {
-        if !self.config.exists(&args.name) {
-            return Err(BoilError::NotFound(args.name))
-        }
-        // let opts = args.get_opts()?;
-        // self.config.list(opts);
         let mut table = BoilTable::from_args(args)?;
         table.display(self.config.values());
         Ok(())

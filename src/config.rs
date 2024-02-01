@@ -28,20 +28,10 @@ pub struct DefCfg {
     pub proj_path: PathBuf
 }
 
-impl Default for DefCfg {
-    fn default() -> Self {
-        Self {
-            proj_path: default_proj_path()
-        }
-    }
-}
-
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Temp {
     pub path: PathBuf
 }
-
-pub type ProgMap = HashMap<String, Program>;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Programs(pub ProgMap);
@@ -64,6 +54,16 @@ pub enum ProgType {
     JavaScript,
     #[default]
     Bash
+}
+
+pub type ProgMap = HashMap<String, Program>;
+
+impl Default for DefCfg {
+    fn default() -> Self {
+        Self {
+            proj_path: default_proj_path()
+        }
+    }
 }
 
 impl ProgType {
@@ -89,8 +89,6 @@ impl ProgType {
         }
     }
 }
-
-
 
 impl Config {
     pub fn from(path: &PathBuf) -> BoilResult<Self> {
@@ -135,62 +133,6 @@ impl Config {
         self.programs.0.values().cloned().collect()
     }
 
-    pub fn list(&self, opts: Vec<ListOpts>) {
-        let mut table = Table::new();
-        let mut first_row: Vec<Cell> = vec![];
-        
-        for opt in opts.iter() {
-            let o = match opt {
-                ListOpts::Name => Cell::new("Name").style_spec("b"),
-                ListOpts::Description => Cell::new("Description").style_spec("b"),
-                ListOpts::Path => Cell::new("Path").style_spec("b"),
-                ListOpts::Project => Cell::new("Project").style_spec("b"),
-                ListOpts::Tags => Cell::new("Tags").style_spec("b"),
-                ListOpts::Type => Cell::new("Type").style_spec("b")
-            };
-            first_row.push(o);
-        };
-
-        table.add_row(Row::new(first_row));
-        
-        for (_, v) in self.iter() {
-            let mut row: Vec<Cell> = vec![];
-            
-            for opt in opts.iter() {
-                let o = match opt {
-                    ListOpts::Name => Cell::new(&capitalize!(v.name.to_owned())).style_spec("Fbb"),
-                    ListOpts::Description => Cell::new(v.description.as_ref().unwrap()),
-                    ListOpts::Path => Cell::new(v.path.to_str().unwrap()).style_spec("b"),
-                    ListOpts::Project => {
-                        if v.project {
-                            Cell::new("T").style_spec("bFg")
-                        } else {
-                            Cell::new("F").style_spec("bFr")
-                        }
-                    },
-                    ListOpts::Tags => {
-                        if let Some(t) = &v.tags {
-                            Cell::new(
-                                t.iter()
-                                .map(|x| capitalize!(x.to_owned()))
-                                .collect::<Vec<String>>()
-                                .join(", ")
-                                .as_str()
-                            )
-                        } else {
-                            Cell::new("None").style_spec("b")
-                        }
-                        
-                    },
-                    ListOpts::Type => Cell::new(&format!("{:?}", v.prog_type)).style_spec("b")
-                };
-                row.push(o);
-            }
-            table.add_row(Row::new(row));
-        };
-
-        table.printstd();
-    }
 }
 
 macro_rules! capitalize {

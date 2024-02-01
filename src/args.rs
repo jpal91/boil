@@ -122,13 +122,46 @@ pub struct EditOptsGroup {
 
 #[derive(Args, Debug)]
 pub struct ListArgs {
-    #[arg(long, value_delimiter=',', require_equals=true, default_value="n,p,P,t,d,T")]
+    /// A comma delimited list of fields to show in the resulting list of programs
+    /// 
+    /// Values:
+    ///     n | name
+    ///     p | path
+    ///     P | project
+    ///     t | type (program type)
+    ///     d | description
+    ///     T | tags
+    /// 
+    /// Example:
+    ///     boil list --format=n,project,T
+    /// 
+    ///     Will only show the fields Name, Project, and Tags
+    #[arg(long, value_delimiter=',', require_equals=true, default_value="name,path,project,type,description,tags")]
     pub format: Option<Vec<String>>,
+    
+    /// A comma delimited list of fields to sort the resulting list. Use 'help list' or '--help' for further explanation.
+    /// 
+    /// Refer to format arg for more information on field identifiers. 
+    /// All items can be followed by
+    /// (0 or asc) or (1 or desc) for ascending or decending respectively. (0 or asc) is default unless specified.
+    /// 
+    /// Examples:
+    /// 
+    ///     boil list --sort=n
+    /// 
+    ///         Will sort by field name in ascending order
+    /// 
+    ///     boil list --sort=P,1,t,name,0
+    /// 
+    ///         Will sort by if the item is a project (false first in this case), 
+    ///         then tags in ascending order, finally name in ascending order.
     #[arg(long, value_delimiter=',', require_equals=true)]
     pub sort: Option<Vec<String>>,
-    pub name: String
-}
 
+}
+pub struct SortOpt(pub ListOpts, pub u8);
+
+#[derive(PartialEq, Eq, Hash, Clone, Copy)]
 pub enum ListOpts {
     Name,
     Path,
@@ -137,33 +170,6 @@ pub enum ListOpts {
     Description,
     Tags,
 }
-
-pub struct SortOpt(pub ListOpts, pub u8);
-
-impl ListArgs {
-    pub fn get_opts(&self) -> BoilResult<Vec<ListOpts>> {
-        let opts = self.format.as_ref().unwrap();
-        let mut header: Vec<ListOpts> = vec![];
-        
-        for opt in opts.iter() {
-            let o = match opt.as_str() {
-                "n" | "name" => ListOpts::Name,
-                "p" | "path" => ListOpts::Path,
-                "P" | "project" => ListOpts::Project,
-                "t" | "type" => ListOpts::Type,
-                "d" | "description" => ListOpts::Description,
-                "T" | "tags" => ListOpts::Tags,
-                f => return Err(BoilError::ListFormat(f.to_string()))
-            };
-            header.push(o);
-        }
-
-        Ok(header)
-    }
-}
-
-
-
 
 #[cfg(test)]
 mod tests {
@@ -176,11 +182,4 @@ mod tests {
         assert!(true)
     }
 
-    // #[test]
-    // fn test_group() {
-    //     let args = Cli::parse_from(["prog", "edit"]);
-    //     match args.command {
-    //         Commands::Edit(e) => println!("{}", e.)
-    //     }
-    // }
 }
