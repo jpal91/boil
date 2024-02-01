@@ -21,7 +21,10 @@ pub enum Commands {
     Add(AddArgs),
 
     /// Edit existing entries
-    Edit(EditArgs)
+    Edit(EditArgs),
+
+    /// View/List the current programs
+    List(ListArgs)
 }
 
 #[derive(Args, Debug)]
@@ -112,6 +115,11 @@ pub struct EditOptsGroup {
     /// Edit program type of entry
     #[arg(short, long)]
     pub prog_type: Option<String>,
+}
+
+#[derive(Args, Debug)]
+pub struct ListArgs {
+    pub name: String
 }
 
 #[cfg(test)]

@@ -14,7 +14,7 @@ use dirs;
 use serde::{Deserialize, Serialize};
 
 use config::{Config, Program, ProgMap, Temp, ProgType};
-use args::{Commands, NewArgs, AddArgs, EditArgs};
+use args::{Commands, NewArgs, AddArgs, EditArgs, ListArgs};
 use error::{BoilResult, BoilError};
 use defaults::default_config;
 use project::{create_program, create_project};
@@ -46,7 +46,8 @@ impl Boil {
         match cmd {
             Commands::Add(c) => self.add_existing(c)?,
             Commands::New(c) => self.add_new(c)?,
-            Commands::Edit(c) => self.edit(c)?
+            Commands::Edit(c) => self.edit(c)?,
+            Commands::List(c) => self.list(c)?
         };
 
         Ok(())
@@ -184,6 +185,15 @@ impl Boil {
         if let Some(p) = args.eopts.prog_type {
             entry.prog_type = ProgType::from_string(&p);
         }
+        Ok(())
+    }
+
+    fn list(&self, mut args: ListArgs) -> BoilResult<()> {
+        if !self.config.exists(&args.name) {
+            return Err(BoilError::NotFound(args.name))
+        }
+
+        self.config.list();
         Ok(())
     }
 

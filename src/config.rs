@@ -1,8 +1,11 @@
 use std::fs;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::collections::hash_map::Iter;
+
 use serde::{Deserialize, Serialize};
 use toml;
+use prettytable::{Table, Row, Cell, row};
 
 use crate::error::BoilResult;
 use crate::defaults::default_proj_path;
@@ -120,4 +123,32 @@ impl Config {
     pub fn get_mut(&mut self, key: &str) -> &mut Program {
         self.programs.0.get_mut(key).unwrap()
     }
+
+    pub fn iter(&self) -> Iter<String, Program> {
+        self.programs.0.iter()
+    }
+
+    pub fn list(&self) {
+        let mut table = Table::new();
+        table.add_row(row![b->"Name", b->"Project", b->"Description"]);
+        
+        for (_, v) in self.iter() {
+            table.add_row(row![Fbb->capitalize!(v.name.to_owned()), v.project, v.description.as_ref().unwrap()]);
+        };
+
+        table.printstd();
+    }
 }
+
+macro_rules! capitalize {
+    ($string:expr) => {
+        if $string.is_empty() {
+            $string
+        } else {
+            let s = $string.to_owned();
+            let mut b = s.chars();
+            b.next().unwrap().to_uppercase().collect::<String>() + b.as_str()
+        }
+    };
+}
+pub(crate) use capitalize;
