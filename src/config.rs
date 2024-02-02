@@ -56,12 +56,57 @@ pub enum ProgType {
     Bash
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub enum Field {
+    Name(String),
+    Project(bool),
+    Path(PathBuf),
+    Type(ProgType),
+    Description(Option<String>),
+    Tags(Option<Vec<String>>)
+}
+
 pub type ProgMap = HashMap<String, Program>;
 
 impl Default for DefCfg {
     fn default() -> Self {
         Self {
             proj_path: default_proj_path()
+        }
+    }
+}
+
+impl Program {
+    pub fn opt_to_val(&self, opt: &ListOpts) -> Field {
+        match opt {
+            ListOpts::Name => Field::Name(self.name.clone()),
+            ListOpts::Description => Field::Description(self.description.clone()),
+            ListOpts::Path => Field::Path(self.path.clone()),
+            ListOpts::Project => Field::Project(self.project),
+            ListOpts::Tags => Field::Tags(self.tags.clone()),
+            ListOpts::Type => Field::Type(self.prog_type.clone())
+        }
+    }
+
+    pub fn vals_to_byes(&self, opt: &ListOpts) -> Vec<u8> {
+        match opt {
+            ListOpts::Name => self.name.as_bytes().into(),
+            ListOpts::Path => self.path.to_str().unwrap().as_bytes().to_vec(),
+            ListOpts::Project => vec![self.project.into()],
+            ListOpts::Type => format!("{:?}", self.prog_type).as_bytes().to_vec(),
+            ListOpts::Description => self
+                .description
+                .clone()
+                .unwrap_or(String::new())
+                .as_bytes()
+                .to_vec(),
+            ListOpts::Tags => self
+                .tags
+                .clone()
+                .unwrap_or(vec![])
+                .iter()
+                .flat_map(|f| f.as_bytes().to_owned())
+                .collect(),
         }
     }
 }

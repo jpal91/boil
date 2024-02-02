@@ -2,15 +2,15 @@ use std::collections::HashSet;
 
 use prettytable::{Cell, Row, Table};
 
-use crate::args::{ListArgs, ListOpts, SortOpt};
-use crate::config::Program;
+use crate::args::{ListArgs, ListOpts, SortOpt, FilterOpt};
+use crate::config::{Program, Field};
 use crate::error::{BoilError, BoilResult};
 use crate::utils::capitalize;
 
 struct TableOpts {
     list_args: Vec<ListOpts>,
     sort_arg: Option<Vec<SortOpt>>,
-    // filter_args:
+    filter_args: Option<Vec<FilterOpt>>
 }
 
 pub struct BoilTable {
@@ -78,6 +78,7 @@ impl TableOpts {
         Ok(Self {
             list_args,
             sort_arg,
+            filter_args: args.filter
         })
     }
 }
@@ -113,6 +114,13 @@ impl BoilTable {
     pub fn display(&mut self, mut entries: Vec<Program>) {
         if let Some(s) = &self.opts.sort_arg {
             entries.sort_by_cached_key(|k| get_sort_key(k, s))
+        };
+
+        if let Some(f) = &self.opts.filter_args {
+            entries = entries
+                .into_iter()
+                .filter(|p| check_filter(p, f))
+                .collect()
         };
 
         for e in entries.iter() {
@@ -157,25 +165,7 @@ fn get_sort_key(prog: &Program, sort_opt: &Vec<SortOpt>) -> SortKey {
     let mut key_order: SortKey = vec![];
 
     for opt in sort_opt {
-        let mut bytes: Vec<u8> = match opt.0 {
-            ListOpts::Name => prog.name.as_bytes().into(),
-            ListOpts::Path => prog.path.to_str().unwrap().as_bytes().to_vec(),
-            ListOpts::Project => vec![prog.project.into()],
-            ListOpts::Type => format!("{:?}", prog.prog_type).as_bytes().to_vec(),
-            ListOpts::Description => prog
-                .description
-                .clone()
-                .unwrap_or(String::new())
-                .as_bytes()
-                .to_vec(),
-            ListOpts::Tags => prog
-                .tags
-                .clone()
-                .unwrap_or(vec![])
-                .iter()
-                .flat_map(|f| f.as_bytes().to_owned())
-                .collect(),
-        };
+        let mut bytes = prog.vals_to_byes(&opt.0);
 
         let ibytes: Vec<i8> = bytes
             .iter()
@@ -192,4 +182,29 @@ fn get_sort_key(prog: &Program, sort_opt: &Vec<SortOpt>) -> SortKey {
     }
 
     key_order
+}
+
+fn check_filter(prog: &Program, filter_opts: &Vec<FilterOpt>) -> bool {
+    for f in filter_opts.iter() {
+        let prog_val = prog.vals_to_byes(&f.0);
+        let check_val: Vec<u8> = match f.2.as_str() {
+            "false" | "0" => vec![0],
+            "true" | "1" => vec![1],
+            f => f.as_bytes().into()
+        };
+
+        let res = match f.1 {
+            0 => prog_val == check_val,
+            1 => prog_val != check_val,
+            2 => prog_val.windows(check_val.len()).any(|w| w == &check_val),
+            3 => !prog_val.windows(check_val.len()).any(|w| w == &check_val),
+            _ => panic!()
+        };
+
+        if !res {
+            return false
+        }
+    }
+
+    true
 }

@@ -181,8 +181,18 @@ fn parse_filter(inp: &str) -> Result<FilterOpt, String> {
     let mut args = inp.split(':');
 
     if args.clone().count() != 3 {
-        return Err(format!("Input must be in format field:expression:value"))
+        return Err(format!("Input must be in format value:expression:field"))
     }
+
+    let val = args.next().unwrap().to_string();
+
+    let exp = match args.next().unwrap() {
+        "eq" | "equals" => 0,
+        "ne" | "nequals" | "neq" => 1,
+        "in" => 2,
+        "nin" | "notin" => 3,
+        f => return Err(format!("'{}' is not a valid option for 'expression'", f))
+    };
 
     let field = match args.next().unwrap() {
         "n" | "name" => ListOpts::Name,
@@ -193,16 +203,6 @@ fn parse_filter(inp: &str) -> Result<FilterOpt, String> {
         "T" | "tag" | "tags" => ListOpts::Tags,
         f => return Err(format!("'{}' is not a valid option for 'field'", f))
     };
-
-    let exp = match args.next().unwrap() {
-        "eq" | "equals" => 0,
-        "ne" | "nequals" => 1,
-        "in" => 2,
-        "nin" | "notin" => 3,
-        f => return Err(format!("'{}' is not a valid option for 'expression'", f))
-    };
-
-    let val = args.next().unwrap().to_string();
 
     Ok(FilterOpt(field, exp, val))
 }
