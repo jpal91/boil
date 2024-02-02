@@ -198,6 +198,20 @@ fn check_filter(prog: &Program, filter_opts: &Vec<FilterOpt>) -> bool {
             1 => prog_val != check_val,
             2 => prog_val.windows(check_val.len()).any(|w| w == &check_val),
             3 => !prog_val.windows(check_val.len()).any(|w| w == &check_val),
+            req @ (4 | 5) => {
+                let vals = &mut check_val.split(|&num| num == b'+');
+
+                let res = vals
+                    .any(|v|
+                        prog_val.windows(v.len()).any(|w| w == v)
+                    );
+                
+                if req == 5 {
+                    !res
+                } else {
+                    res
+                }
+            }
             _ => panic!()
         };
 

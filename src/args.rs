@@ -149,7 +149,7 @@ pub struct ListArgs {
     /// 
     ///     boil list --sort=n
     /// 
-    ///         Will sort by field name in ascending order
+    ///     Will sort by field name in ascending order
     /// 
     ///     boil list --sort=P,1,t,name,0
     /// 
@@ -189,8 +189,10 @@ fn parse_filter(inp: &str) -> Result<FilterOpt, String> {
     let exp = match args.next().unwrap() {
         "eq" | "equals" => 0,
         "ne" | "nequals" | "neq" => 1,
-        "in" => 2,
-        "nin" | "notin" => 3,
+        "in" if !val.contains("+") => 2,
+        "nin" | "notin" if !val.contains("+")=> 3,
+        "in" => 4,
+        "nin" | "notin" => 5,
         f => return Err(format!("'{}' is not a valid option for 'expression'", f))
     };
 
