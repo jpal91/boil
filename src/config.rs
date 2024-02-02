@@ -88,7 +88,7 @@ impl Program {
         }
     }
 
-    pub fn vals_to_byes(&self, opt: &ListOpts) -> Vec<u8> {
+    pub fn vals_to_bytes(&self, opt: &ListOpts) -> Vec<u8> {
         match opt {
             ListOpts::Name => self.name.as_bytes().into(),
             ListOpts::Path => self.path.to_str().unwrap().as_bytes().to_vec(),

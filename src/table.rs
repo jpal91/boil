@@ -165,7 +165,7 @@ fn get_sort_key(prog: &Program, sort_opt: &Vec<SortOpt>) -> SortKey {
     let mut key_order: SortKey = vec![];
 
     for opt in sort_opt {
-        let mut bytes = prog.vals_to_byes(&opt.0);
+        let mut bytes = prog.vals_to_bytes(&opt.0);
 
         let ibytes: Vec<i8> = bytes
             .iter()
@@ -186,16 +186,25 @@ fn get_sort_key(prog: &Program, sort_opt: &Vec<SortOpt>) -> SortKey {
 
 fn check_filter(prog: &Program, filter_opts: &Vec<FilterOpt>) -> bool {
     for f in filter_opts.iter() {
-        let mut prog_val = prog.vals_to_byes(&f.0);
+        let mut case_sensitive = false;
+        
         let check_val: Vec<u8> = match f.2.as_str() {
             "False" | "false" | "0" => vec![0],
             "True" | "true" | "1" => vec![1],
             f if f.contains('*') => {
-                prog_val = prog_val.into_iter().map(|v| v.to_ascii_lowercase()).collect();
-                f.replace('*', "").to_lowercase().as_bytes().into()
+                case_sensitive = true;
+                f.replace('*', "").as_bytes().into()
             },
-            f => f.as_bytes().into()
+            f => f.to_lowercase().as_bytes().into()
         };
+
+        let prog_val: Vec<u8>;
+
+        if case_sensitive {
+            prog_val = prog.vals_to_bytes(&f.0);
+        } else {
+            prog_val = prog.vals_to_bytes(&f.0).into_iter().map(|v| v.to_ascii_lowercase()).collect();
+        }
 
         let res = match f.1 {
             0 => prog_val == check_val,
