@@ -2,15 +2,15 @@ use std::collections::HashSet;
 
 use prettytable::{Cell, Row, Table};
 
-use crate::args::{ListArgs, ListOpts, SortOpt, FilterOpt};
-use crate::config::{Program, Field};
+use crate::args::{FilterOpt, ListArgs, ListOpts, SortOpt};
+use crate::config::{Field, Program};
 use crate::error::{BoilError, BoilResult};
 use crate::utils::capitalize;
 
 struct TableOpts {
     list_args: Vec<ListOpts>,
     sort_arg: Option<Vec<SortOpt>>,
-    filter_args: Option<Vec<FilterOpt>>
+    filter_args: Option<Vec<FilterOpt>>,
 }
 
 pub struct BoilTable {
@@ -78,7 +78,7 @@ impl TableOpts {
         Ok(Self {
             list_args,
             sort_arg,
-            filter_args: args.filter
+            filter_args: args.filter,
         })
     }
 }
@@ -117,10 +117,7 @@ impl BoilTable {
         };
 
         if let Some(f) = &self.opts.filter_args {
-            entries = entries
-                .into_iter()
-                .filter(|p| check_filter(p, f))
-                .collect()
+            entries = entries.into_iter().filter(|p| check_filter(p, f)).collect()
         };
 
         for e in entries.iter() {
@@ -187,15 +184,15 @@ fn get_sort_key(prog: &Program, sort_opt: &Vec<SortOpt>) -> SortKey {
 fn check_filter(prog: &Program, filter_opts: &Vec<FilterOpt>) -> bool {
     for f in filter_opts.iter() {
         let mut case_sensitive = false;
-        
+
         let check_val: Vec<u8> = match f.2.as_str() {
             "False" | "false" | "0" => vec![0],
             "True" | "true" | "1" => vec![1],
             f if f.contains('*') => {
                 case_sensitive = true;
                 f.replace('*', "").as_bytes().into()
-            },
-            f => f.to_lowercase().as_bytes().into()
+            }
+            f => f.to_lowercase().as_bytes().into(),
         };
 
         let prog_val: Vec<u8>;
@@ -203,7 +200,11 @@ fn check_filter(prog: &Program, filter_opts: &Vec<FilterOpt>) -> bool {
         if case_sensitive {
             prog_val = prog.vals_to_bytes(&f.0);
         } else {
-            prog_val = prog.vals_to_bytes(&f.0).into_iter().map(|v| v.to_ascii_lowercase()).collect();
+            prog_val = prog
+                .vals_to_bytes(&f.0)
+                .into_iter()
+                .map(|v| v.to_ascii_lowercase())
+                .collect();
         }
 
         let res = match f.1 {
@@ -214,22 +215,19 @@ fn check_filter(prog: &Program, filter_opts: &Vec<FilterOpt>) -> bool {
             req @ (4 | 5) => {
                 let vals = &mut check_val.split(|&num| num == b'+');
 
-                let res = vals
-                    .any(|v|
-                        prog_val.windows(v.len()).any(|w| w == v)
-                    );
-                
+                let res = vals.any(|v| prog_val.windows(v.len()).any(|w| w == v));
+
                 if req == 5 {
                     !res
                 } else {
                     res
                 }
             }
-            _ => panic!()
+            _ => panic!(),
         };
 
         if !res {
-            return false
+            return false;
         }
     }
 

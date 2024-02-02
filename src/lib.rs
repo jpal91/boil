@@ -11,12 +11,13 @@ pub mod utils;
 use std::env::temp_dir;
 use std::fs::{self, metadata};
 use std::path::{Path, PathBuf};
+use std::io::{self, Write};
 
 use dirs;
 use serde::{Deserialize, Serialize};
 
 use config::{Config, Program, ProgMap, Temp, ProgType};
-use args::{Commands, NewArgs, AddArgs, EditArgs, ListArgs};
+use args::{Commands, NewArgs, AddArgs, EditArgs, ListArgs, RemoveArgs};
 use error::{BoilResult, BoilError};
 use defaults::default_config;
 use project::{create_program, create_project};
@@ -50,7 +51,8 @@ impl Boil {
             Commands::Add(c) => self.add_existing(c)?,
             Commands::New(c) => self.add_new(c)?,
             Commands::Edit(c) => self.edit(c)?,
-            Commands::List(c) => self.list(c)?
+            Commands::List(c) => self.list(c)?,
+            Commands::Remove(c) => self.remove(c)?
         };
 
         Ok(())
@@ -194,6 +196,22 @@ impl Boil {
     fn list(&self, mut args: ListArgs) -> BoilResult<()> {
         let mut table = BoilTable::from_args(args)?;
         table.display(self.config.values());
+        Ok(())
+    }
+
+    fn remove(&mut self, mut args: RemoveArgs) -> BoilResult<()> {
+        if !args.force {
+            let mut input = String::new();
+            print!("Are you sure you wish to remove {} - [y/N]: ", args.name);
+            io::stdout().flush();
+            io::stdin().read_line(&mut input)?;
+            
+            if input.as_str().trim() != "y" {
+                return Ok(())
+            }
+        }
+
+        self.config.remove(args.name)?;
         Ok(())
     }
 

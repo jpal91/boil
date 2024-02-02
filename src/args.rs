@@ -27,7 +27,10 @@ pub enum Commands {
     Edit(EditArgs),
 
     /// View/List the current programs
-    List(ListArgs)
+    List(ListArgs),
+
+    /// Remove a program from the configuration
+    Remove(RemoveArgs)
 }
 
 #[derive(Args, Debug)]
@@ -139,7 +142,7 @@ pub struct ListArgs {
     #[arg(long, value_delimiter=',', require_equals=true, default_value="name,project,type,description,tags")]
     pub format: Option<Vec<String>>,
     
-    /// A comma delimited list of fields to sort the resulting list. Use 'help list' or '--help' for further explanation.
+    /// A comma delimited list of (field, (asc|desc)?) to sort the resulting list. Use 'help list' or '--help' for further explanation.
     /// 
     /// Refer to format arg for more information on field identifiers. 
     /// All items can be followed by
@@ -158,6 +161,7 @@ pub struct ListArgs {
     #[arg(long, value_delimiter=',', require_equals=true)]
     pub sort: Option<Vec<String>>,
 
+    /// A comma delimited list of (value:expression:field) to filter the resulting list
     #[arg(long, value_delimiter=',', require_equals=true, value_parser=parse_filter)]
     pub filter: Option<Vec<FilterOpt>>
 
@@ -175,6 +179,16 @@ pub enum ListOpts {
     Type,
     Description,
     Tags,
+}
+
+#[derive(Args, Debug)]
+pub struct RemoveArgs {
+    /// Force removal without prompting
+    #[arg(long, short)]
+    pub force: bool,
+
+    /// Name of entry to remove
+    pub name: String
 }
 
 fn parse_filter(inp: &str) -> Result<FilterOpt, String> {

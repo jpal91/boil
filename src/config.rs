@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use toml;
 use prettytable::{Table, Row, Cell, row};
 
-use crate::error::BoilResult;
+use crate::error::{BoilError, BoilResult};
 use crate::defaults::default_proj_path;
 use crate::args::ListOpts;
 
@@ -156,6 +156,14 @@ impl Config {
         fs::write(path, config_str)?;
 
         Ok(())
+    }
+
+    pub fn remove(&mut self, entry: String) -> BoilResult<()> {
+        if self.programs.0.remove_entry(&entry).is_none() {
+            Err(BoilError::NotFound(entry))
+        } else {
+            Ok(())
+        }
     }
 
     pub fn len(&self) -> usize {
