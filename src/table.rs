@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use prettytable::{row, Cell, Row, Table};
+use prettytable::{Cell, Row, Table};
 
 use crate::args::{ListArgs, ListOpts, SortOpt};
 use crate::config::Program;
@@ -125,9 +125,9 @@ impl BoilTable {
                     ListOpts::Path => Cell::new(e.path.to_str().unwrap()).style_spec("b"),
                     ListOpts::Project => {
                         if e.project {
-                            Cell::new("T").style_spec("bFg")
+                            Cell::new("True").style_spec("bFg")
                         } else {
-                            Cell::new("F").style_spec("bFr")
+                            Cell::new("False").style_spec("bFr")
                         }
                     }
                     ListOpts::Tags => {

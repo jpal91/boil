@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{iter::Filter, path::PathBuf};
 
 use clap::{Parser, Subcommand, Args};
 use prettytable::{Table, Row, Cell, row};
@@ -136,7 +136,7 @@ pub struct ListArgs {
     ///     boil list --format=n,project,T
     /// 
     ///     Will only show the fields Name, Project, and Tags
-    #[arg(long, value_delimiter=',', require_equals=true, default_value="name,path,project,type,description,tags")]
+    #[arg(long, value_delimiter=',', require_equals=true, default_value="name,project,type,description,tags")]
     pub format: Option<Vec<String>>,
     
     /// A comma delimited list of fields to sort the resulting list. Use 'help list' or '--help' for further explanation.
@@ -158,10 +158,16 @@ pub struct ListArgs {
     #[arg(long, value_delimiter=',', require_equals=true)]
     pub sort: Option<Vec<String>>,
 
+    #[arg(long, value_delimiter=',', require_equals=true, value_parser=parse_filter)]
+    pub filter: Option<Vec<FilterOpt>>
+
 }
 pub struct SortOpt(pub ListOpts, pub u8);
 
-#[derive(PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Clone, Debug)]
+pub struct FilterOpt(pub ListOpts, pub u8, pub String);
+
+#[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
 pub enum ListOpts {
     Name,
     Path,
@@ -169,6 +175,36 @@ pub enum ListOpts {
     Type,
     Description,
     Tags,
+}
+
+fn parse_filter(inp: &str) -> Result<FilterOpt, String> {
+    let mut args = inp.split(':');
+
+    if args.clone().count() != 3 {
+        return Err(format!("Input must be in format field:expression:value"))
+    }
+
+    let field = match args.next().unwrap() {
+        "n" | "name" => ListOpts::Name,
+        "p" | "path" => ListOpts::Path,
+        "P" | "project" => ListOpts::Project,
+        "t" | "type" => ListOpts::Type,
+        "d" | "description" => ListOpts::Description,
+        "T" | "tag" | "tags" => ListOpts::Tags,
+        f => return Err(format!("'{}' is not a valid option for 'field'", f))
+    };
+
+    let exp = match args.next().unwrap() {
+        "eq" | "equals" => 0,
+        "ne" | "nequals" => 1,
+        "in" => 2,
+        "nin" | "notin" => 3,
+        f => return Err(format!("'{}' is not a valid option for 'expression'", f))
+    };
+
+    let val = args.next().unwrap().to_string();
+
+    Ok(FilterOpt(field, exp, val))
 }
 
 #[cfg(test)]
