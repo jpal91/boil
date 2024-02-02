@@ -64,3 +64,7 @@ mod tests {
     }
 
 }
+
+// Ideas:
+// - Customizable payload for creation from yaml - ie custom gitignore, etc.
+// - Logging

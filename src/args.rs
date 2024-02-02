@@ -149,7 +149,7 @@ pub struct ListArgs {
     /// 
     ///     boil list --sort=n
     /// 
-    ///     Will sort by field name in ascending order
+    ///         Will sort by field name in ascending order
     /// 
     ///     boil list --sort=P,1,t,name,0
     /// 

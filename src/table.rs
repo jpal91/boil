@@ -186,10 +186,14 @@ fn get_sort_key(prog: &Program, sort_opt: &Vec<SortOpt>) -> SortKey {
 
 fn check_filter(prog: &Program, filter_opts: &Vec<FilterOpt>) -> bool {
     for f in filter_opts.iter() {
-        let prog_val = prog.vals_to_byes(&f.0);
+        let mut prog_val = prog.vals_to_byes(&f.0);
         let check_val: Vec<u8> = match f.2.as_str() {
-            "false" | "0" => vec![0],
-            "true" | "1" => vec![1],
+            "False" | "false" | "0" => vec![0],
+            "True" | "true" | "1" => vec![1],
+            f if f.contains('*') => {
+                prog_val = prog_val.into_iter().map(|v| v.to_ascii_lowercase()).collect();
+                f.replace('*', "").to_lowercase().as_bytes().into()
+            },
             f => f.as_bytes().into()
         };
 
