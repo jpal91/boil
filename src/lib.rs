@@ -58,6 +58,18 @@ impl Boil {
         Ok(())
     }
 
+    pub fn init(&self) -> BoilResult<()> {
+        let cfg_path = default_config()?;
+
+        if cfg_path.try_exists()? {
+            return todo!()
+        }
+
+        
+
+        Ok(())
+    }
+
     fn add_existing(&mut self, args: AddArgs) -> BoilResult<()> {
         let (description, tags, name, path) = 
             (args.description, args.tags, args.name, args.path);
