@@ -47,26 +47,8 @@ pub fn color_str(input: &str, tag: &str) -> String {
     format!("{}\x1b[{}m{}\x1b[0m", newline, attr.join(";"), input)
 }
 
-macro_rules! print_color {
-    () => (print!("\n"));
 
-    ( $tag:ident -> $msg:expr, $($rest:tt)* ) => {
-        {
-            let color = color_str($msg, stringify!($tag));
-            print!("{} ", color);
-            print_color!($($rest)*);
-        }
-    };
-
-    ( $tag:ident -> $msg:expr ) => (print_color!($tag -> $msg,));
-
-
-    ( $msg:expr, $($rest:tt)* ) => (print_color!(X->$msg, $($rest)*));
-
-    ( $msg:expr ) => (print_color!(X->$msg,));
-        
-}
-
+/// Inspired by the `row` macro in `prettytable`
 macro_rules! colorize {
 
     () => {String::new()};
@@ -78,17 +60,21 @@ macro_rules! colorize {
         }
     };
 
-    ( [ $($acc:tt)* ]; $msg:expr, $($rest:tt)* ) => {colorize!([$($acc)*]; X->$msg, $($rest)*)};
+    ( [ $($acc:tt)* ]; $msg:expr, $($rest:tt)* ) => {colorize!([$($acc)* $msg.to_string() ,]; $($rest)*)};
 
     ( [ $($acc:tt)* ]; $tag:ident -> $msg:expr ) => {colorize!([$($acc)*]; $tag -> $msg,)};
 
-    ( [ $($acc:tt)* ]; $msg:expr ) => {colorize!([$($acc)*]; X->$msg,)};
+    ( [ $($acc:tt)* ]; $msg:expr ) => {colorize!([$($acc)* $msg.to_string() ,]; )};
 
-    ( [ $($acc:tt)* ];) =>  { [$($acc)*].join(" ") };
+    ( [ $($acc:tt)* ]; ) =>  { [$($acc)*].join(" ") };
 
     ( $($any:tt)* ) => { colorize!([]; $($any)* ) };
 }
 
+macro_rules! print_color {
+    () => (println!(""));
+    ( $($any:tt)* ) => ( println!("{}", colorize!([]; $($any)*)) );
+}
 
 pub(crate) use {capitalize, print_color, colorize};
 
@@ -97,14 +83,14 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_color() {
+    fn test_print_color() {
         print_color!(Fr->"testing", Fbbi->"testing1", b->"testing2", x->"testing3", "testing4", Fgbu->"testing5");
         print_color!("hello");
     }
 
     #[test]
     fn test_colorize() {
-        let col = colorize!(Fgb->"hello again", N->"hello", Fr->"goodbye", "again" );
+        let col = colorize!(Fgb->"hello again", N->"hello", "and", FrFb->"goodbye", "again" );
         println!("{}", col)
     }
 
