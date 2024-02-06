@@ -28,10 +28,14 @@ pub struct DefCfg {
     pub proj_path: PathBuf
 }
 
+/// Object representing the last file/project added
+/// as a temp for tracking purposes
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Temp {
     pub path: PathBuf
 }
+
+pub type ProgMap = HashMap<String, Program>;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Programs(pub ProgMap);
@@ -47,7 +51,7 @@ pub struct Program {
     pub tags: Option<Vec<String>>
 }
 
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone, PartialEq)]
 pub enum ProgType {
     Python,
     Rust,
@@ -66,7 +70,7 @@ pub enum Field {
     Tags(Option<Vec<String>>)
 }
 
-pub type ProgMap = HashMap<String, Program>;
+
 
 impl Default for DefCfg {
     fn default() -> Self {
@@ -77,17 +81,8 @@ impl Default for DefCfg {
 }
 
 impl Program {
-    pub fn opt_to_val(&self, opt: &ListOpts) -> Field {
-        match opt {
-            ListOpts::Name => Field::Name(self.name.clone()),
-            ListOpts::Description => Field::Description(self.description.clone()),
-            ListOpts::Path => Field::Path(self.path.clone()),
-            ListOpts::Project => Field::Project(self.project),
-            ListOpts::Tags => Field::Tags(self.tags.clone()),
-            ListOpts::Type => Field::Type(self.prog_type.clone())
-        }
-    }
-
+    /// Helper function to get the requested fields from the `list` argument as bytes
+    /// for easier manipulation
     pub fn vals_to_bytes(&self, opt: &ListOpts) -> Vec<u8> {
         match opt {
             ListOpts::Name => self.name.as_bytes().into(),
@@ -127,10 +122,10 @@ impl ProgType {
     
     pub fn ext(&self) -> String {
         match self {
-            Self::Python => "py".into(),
-            Self::JavaScript => "js".into(),
-            Self::Rust => "rs".into(),
-            _ => "sh".into()
+            Self::Python => "py".to_string(),
+            Self::JavaScript => "js".to_string(),
+            Self::Rust => "rs".to_string(),
+            _ => "sh".to_string()
         }
     }
 }
@@ -149,12 +144,20 @@ impl Config {
         Ok(config)
     }
 
+    pub fn get(&self, entry: String) -> Option<&Program> {
+        self.programs.0.get(&entry)
+    }
+
     pub fn write(&self, path: &PathBuf) -> BoilResult<()> {
         let config_str = toml::to_string_pretty(&self)?;
 
         fs::write(path, config_str)?;
 
         Ok(())
+    }
+
+    pub fn insert(&mut self, key: String, entry: Program) {
+        self.programs.0.insert(key, entry);
     }
 
     pub fn remove(&mut self, entry: String) -> BoilResult<()> {

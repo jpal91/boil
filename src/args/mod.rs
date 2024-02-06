@@ -15,8 +15,11 @@ pub struct Cli {
     #[command(subcommand)]
     pub command: Commands,
 
-    #[arg(long)]
+    #[arg(long, hide=true)]
     pub debug: bool,
+
+    #[arg(long, hide=true)]
+    pub cfg_path: Option<PathBuf>
 }
 
 #[derive(Subcommand, Debug, PartialEq)]
@@ -63,7 +66,7 @@ pub struct AddArgs {
     pub path: PathBuf,
 }
 
-#[derive(Args, Debug, PartialEq)]
+#[derive(Args, Debug, PartialEq, Clone)]
 pub struct NewArgs {
     /// Create a temp file/directory
     #[arg(short, long)]
@@ -152,6 +155,9 @@ pub struct InitArgs {
     /// Specify project directory path
     #[arg(long, short)]
     pub path: Option<PathBuf>,
+
+    #[arg(long, hide=true)]
+    pub test: bool
 }
 
 #[cfg(test)]

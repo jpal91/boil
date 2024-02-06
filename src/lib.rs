@@ -60,14 +60,22 @@ impl Boil {
         Ok(())
     }
 
-    pub fn init(args: InitArgs) -> BoilResult<()> {
-        let cfg_path = default_config()?;
+    pub fn init(args: InitArgs, path: Option<PathBuf>) -> BoilResult<()> {
+        let cfg_path = match path {
+            Some(p) => p,
+            None => default_config()?
+        };
 
         if !args.force && cfg_path.try_exists()? {
             return Err(BoilError::ConfigExists(cfg_path.to_str().unwrap().to_owned()))
         }
 
-        let res = user_input(colorize!(b->"Create new boil config at ", bFg->cfg_path.to_str().unwrap(), b->" - [y/N]"))?;
+        let res: bool;
+        if !args.test && !args.force {
+            res = user_input(colorize!(b->"Create new boil config at ", bFg->cfg_path.to_str().unwrap(), b->" - [y/N]"))?;
+        } else {
+            res = true
+        }
 
         if !res {
             return Ok(())
@@ -80,6 +88,8 @@ impl Boil {
         } else {
             return Err(BoilError::ConfigCreate)
         };
+
+        fs::File::create(&cfg_path)?;
 
         let mut config = Config::from(&cfg_path)?;
 
@@ -123,15 +133,15 @@ impl Boil {
     fn add_new(&mut self, args: NewArgs) -> BoilResult<()>{
         let program: Program = self.parse_new(&args)?;
 
-        if program.project {
-            if let Some(p) = program.path.parent() {
-                if p.try_exists()? {
-                    return Err(BoilError::PathExists(p.to_path_buf()))
-                }
-            } else {
-                return Err(BoilError::PathExists(program.path))
-            }
-        }
+        // if program.project {
+        //     if let Some(p) = program.path.parent() {
+        //         if p.try_exists()? {
+        //             return Err(BoilError::PathExists(p.to_path_buf()))
+        //         }
+        //     } else {
+        //         return Err(BoilError::PathExists(program.path))
+        //     }
+        // }
 
         if !program.path.try_exists()? {
             if program.project {
@@ -276,3 +286,190 @@ impl Boil {
 
 }
 
+#[cfg(test)]
+mod config_tests {
+    use self::args::EditOptsGroup;
+
+    use super::*;
+    use std::{env, str::FromStr};
+    use tempfile::{tempfile, TempDir, tempdir};
+    use rstest::*;
+    use args::InitArgs;
+    
+
+    #[fixture]
+    fn temp_dir() -> TempDir {
+        let dir = tempdir().unwrap();
+        dir
+    }
+
+    #[fixture]
+    fn config(temp_dir: TempDir) -> TempDir {
+        let mut dir_path = PathBuf::from(temp_dir.path().to_owned());
+        let mut config = Config::default();
+        config.defaults.proj_path = dir_path.to_owned();
+        let descriptions = [
+            Some(String::from("Fun program")),
+            Some(String::from("Utility program")),
+            None
+        ];
+        let tag_list = [
+            Some(vec!["Util".to_string(), "fun".to_string(),]),
+            Some(vec!["Wonderful".to_string(), "Fun".to_string(),]),
+            Some(vec!["util".to_string(), "Other".to_string(),])
+        ];
+
+        dir_path.push("null");
+
+        for i in 0..3 {
+            let name = format!("test{}", i);
+            dir_path.set_file_name(&name);
+            let project = false;
+            let path = dir_path.to_owned();
+            let prog_type = ProgType::Python;
+            let description = descriptions[i].to_owned();
+            let tags = tag_list[i].to_owned();
+
+            let program = Program {
+                name: name.to_owned(),
+                project,
+                path,
+                prog_type,
+                description,
+                tags
+            };
+
+            config.insert(name, program);
+            fs::File::create(&dir_path);
+        }
+
+        dir_path.set_file_name("config.toml");
+        config.write(&dir_path).unwrap();
+        temp_dir
+    }
+
+    #[rstest]
+    fn test_init(temp_dir: TempDir) {
+        let path = temp_dir.path().join("config1.toml");
+        assert!(!path.exists());
+        
+        let init_args = InitArgs{ force: true, path: None, test: true };
+        Boil::init(init_args, Some(path.to_owned())).unwrap();
+
+        assert!(path.exists()) 
+    }
+    
+    #[rstest]
+    #[should_panic]
+    fn test_init_panic(temp_dir: TempDir) {
+        let path = temp_dir.path().join("config2.toml");
+        fs::File::create(&path).unwrap();
+        let init_args = InitArgs{ force: false, path: None, test: true };
+        Boil::init(init_args, Some(path)).unwrap();
+    } 
+
+    #[rstest]
+    fn test_add_existing(mut config: TempDir) {
+        let mut path = PathBuf::from(config.path());
+        path.push("config.toml");
+        let mut boil = Boil::from(Some(path.to_owned())).unwrap();
+
+        path.set_file_name("test4");
+        fs::File::create(&path);
+
+        let name = String::from("test4");
+        let description = Some(String::from("Fun program"));
+        let tags = Some(vec!["Other".to_string()]);
+        let prog_type = Some("Rust".to_string());
+        let path = path.to_owned();
+
+        boil.add_existing(AddArgs{name: name.to_owned(), description: description.to_owned(), tags: tags.to_owned(), prog_type: prog_type.to_owned(), path: path.to_owned()}).unwrap();
+
+        let entry = boil.config.get(String::from("test4")).unwrap();
+
+        assert_eq!(name, entry.name);
+        assert_eq!(description, entry.description);
+        assert_eq!(tags, entry.tags);
+        assert_eq!(ProgType::Rust, entry.prog_type);
+        assert_eq!(path, entry.path);
+    }
+
+    #[rstest]
+    fn test_add_new(config: TempDir) {
+        let mut path = PathBuf::from(config.path());
+        path.push("config.toml");
+        let mut boil = Boil::from(Some(path.to_owned())).unwrap();
+
+        let name = String::from("test4");
+        let description = Some(String::from("Fun program"));
+        let tags = Some(vec!["Other".to_string()]);
+        let prog_type = Some("Bash".to_string());
+        let project = true;
+
+        let args = NewArgs {
+            name: Some(name.to_owned()),
+            description: description.to_owned(),
+            temp: false,
+            project: true,
+            prog_type: prog_type.to_owned(),
+            tags: tags.to_owned(),
+            path: None
+        };
+
+        boil.add_new(args).unwrap();
+        path.set_file_name("test4");
+
+        assert!(path.exists());
+
+        let entry = boil.config.get(String::from("test4")).unwrap();
+
+        assert_eq!(name, entry.name);
+        assert_eq!(description, entry.description);
+        assert_eq!(tags, entry.tags);
+        assert_eq!(ProgType::Bash, entry.prog_type);
+        assert_eq!(path, entry.path);
+        assert_eq!(true, entry.project);
+
+    }
+
+    #[rstest]
+    fn test_edit(config: TempDir) {
+        let mut path = PathBuf::from(config.path());
+        path.push("config.toml");
+        let mut boil = Boil::from(Some(path.to_owned())).unwrap();
+        let prog = boil.config.get(String::from("test2")).unwrap().to_owned();
+
+        let args = EditArgs {
+            name: String::from("test2"),
+            eopts: EditOptsGroup {
+                description: Some(String::from("Not fun program")),
+                tags: Some(vec!["test".to_string()]),
+                rm_tags: Some(vec!["util".to_string()]),
+                prog_type: None
+            }
+        };
+
+        boil.edit(args).unwrap();
+        let new_prog = boil.config.get(String::from("test2")).unwrap().to_owned();
+        assert_ne!(prog.description, new_prog.description);
+        assert_ne!(prog.tags, new_prog.tags);
+        assert_eq!(prog.prog_type, new_prog.prog_type);
+    }
+
+    #[rstest]
+    fn test_remove(config: TempDir) {
+        let mut path = PathBuf::from(config.path());
+        path.push("config.toml");
+        let mut boil = Boil::from(Some(path.to_owned())).unwrap();
+
+        let args = RemoveArgs {
+            name: String::from("test1"),
+            force: true
+        };
+
+        boil.remove(args).unwrap();
+        let prog = boil.config.get(String::from("test1"));
+        println!("{:?}", prog);
+        assert!(prog.is_none())
+    }
+}

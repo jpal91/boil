@@ -19,5 +19,9 @@ dirs = "5.0.1"
 dotenv = "0.15.0"
 prettytable-rs = "0.10.0"
 serde = { version = "1.0.196", features = ["derive"] }
+tempfile = "3.10.0"
 thiserror = "1.0.56"
 toml = "0.8.8"
+
+[dev-dependencies]
+rstest = "0.18.2"
