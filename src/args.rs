@@ -198,7 +198,11 @@ pub struct RemoveArgs {
 pub struct InitArgs {
     /// Force creation/override of config file
     #[arg(long, short)]
-    pub force: bool
+    pub force: bool,
+
+    /// Specify project directory path
+    #[arg(long, short)]
+    pub path: Option<PathBuf>
 }
 
 fn parse_filter(inp: &str) -> Result<FilterOpt, String> {

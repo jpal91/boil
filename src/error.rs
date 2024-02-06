@@ -26,7 +26,9 @@ pub enum BoilError {
     #[error("Unknown sort option - '{0}'")]
     SortFormat(String),
     #[error("Config file at - '{0}' - already exists")]
-    ConfigExists(String)
+    ConfigExists(String),
+    #[error("Config file not found - please use 'boil init' to create")]
+    NeedInit,
 }
 
 pub type BoilResult<T> = Result<T, BoilError>;

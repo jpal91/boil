@@ -143,8 +143,7 @@ impl Config {
             let content = fs::read_to_string(path)?;
             config = toml::from_str(&content)?;
         } else {
-            fs::File::create(path);
-            config = Config::default();
+            return Err(BoilError::NeedInit)
         }
 
         Ok(config)
@@ -184,6 +183,10 @@ impl Config {
 
     pub fn values(&self) -> Vec<Program> {
         self.programs.0.values().cloned().collect()
+    }
+
+    pub fn set_proj_path(&mut self, val: &PathBuf) {
+        self.defaults.proj_path = val.to_owned();
     }
 
 }
