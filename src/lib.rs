@@ -406,7 +406,7 @@ mod config_tests {
         let prog_type = Some("Bash".to_string());
         let project = true;
 
-        let args = NewArgs {
+        let mut args = NewArgs {
             name: Some(name.to_owned()),
             description: description.to_owned(),
             temp: false,
@@ -416,7 +416,7 @@ mod config_tests {
             path: None
         };
 
-        boil.add_new(args).unwrap();
+        boil.add_new(args.clone()).unwrap();
         path.set_file_name("test4");
 
         assert!(path.exists());
@@ -429,6 +429,20 @@ mod config_tests {
         assert_eq!(ProgType::Bash, entry.prog_type);
         assert_eq!(path, entry.path);
         assert_eq!(true, entry.project);
+
+        // Errors
+        // Duplicate
+        assert!(boil.add_new(args.clone()).is_err());
+
+        // Path already exists
+        args.name = Some(String::from("test5"));
+        args.path = Some(path.to_owned());
+        assert!(boil.add_new(args.clone()).is_err());
+        
+        // Extension on a project
+        path.set_extension("txt");
+        args.path = Some(PathBuf::from(path.as_path()));
+        assert!(boil.add_new(args.clone()).is_err());
 
     }
 
