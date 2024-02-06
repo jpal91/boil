@@ -30,7 +30,10 @@ pub enum Commands {
     List(ListArgs),
 
     /// Remove a program from the configuration
-    Remove(RemoveArgs)
+    Remove(RemoveArgs),
+
+    /// Initialize new configuration
+    Init(InitArgs)
 }
 
 #[derive(Args, Debug)]
@@ -189,6 +192,13 @@ pub struct RemoveArgs {
 
     /// Name of entry to remove
     pub name: String
+}
+
+#[derive(Args, Debug)]
+pub struct InitArgs {
+    /// Force creation/override of config file
+    #[arg(long, short)]
+    pub force: bool
 }
 
 fn parse_filter(inp: &str) -> Result<FilterOpt, String> {

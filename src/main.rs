@@ -19,6 +19,19 @@ fn main() -> ExitCode {
         println!("{:?}", args);
     }
 
+    match args.command {
+        Commands::Init(a) => {
+            match Boil::init(a) {
+                Ok(_) => return ExitCode::SUCCESS,
+                Err(e) => {
+                    eprintln!("boil error: {e}");
+                    return ExitCode::FAILURE
+                }
+            }
+        },
+        _ => {}
+    }
+
     let mut boil = match Boil::from(None) {
         Ok(b) => b,
         Err(e) => {

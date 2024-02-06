@@ -1,3 +1,5 @@
+use std::io::{self, Write};
+use crate::error::{BoilError, BoilResult};
 
 macro_rules! capitalize {
     ($string:expr) => {
@@ -55,7 +57,7 @@ macro_rules! colorize {
 
     ( [ $($acc:tt)* ]; $tag:ident -> $msg:expr, $($rest:tt)* ) => {
         {
-            let color = color_str($msg, stringify!($tag));
+            let color = $crate::utils::color_str($msg, stringify!($tag));
             colorize!([ $($acc)* color, ]; $($rest)* )
         }
     };
@@ -76,6 +78,20 @@ macro_rules! print_color {
     ( $($any:tt)* ) => ( println!("{}", colorize!([]; $($any)*)) );
 }
 
+pub fn user_input(msg: String) -> BoilResult<bool> {
+    let mut input = String::new();
+    print!("{} ", msg);
+    io::stdout().flush()?;
+    io::stdin().read_line(&mut input)?;
+
+    if input.as_str().trim() == "y" {
+        Ok(true)
+    } else {
+        Ok(false)
+    }
+    
+}
+
 pub(crate) use {capitalize, print_color, colorize};
 
 #[cfg(test)]
@@ -84,7 +100,7 @@ mod tests {
 
     #[test]
     fn test_print_color() {
-        print_color!(Fr->"testing", Fbbi->"testing1", b->"testing2", x->"testing3", "testing4", Fgbu->"testing5");
+        print_color!(Fr->"testing", Fbbi->"testing1", b->"testing2{}", x->"testing3", "testing4", Fgbu->"testing5");
         print_color!("hello");
     }
 

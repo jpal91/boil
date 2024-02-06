@@ -17,11 +17,12 @@ use dirs;
 use serde::{Deserialize, Serialize};
 
 use config::{Config, Program, ProgMap, Temp, ProgType};
-use args::{Commands, NewArgs, AddArgs, EditArgs, ListArgs, RemoveArgs};
+use args::{AddArgs, Commands, EditArgs, InitArgs, ListArgs, NewArgs, RemoveArgs};
 use error::{BoilResult, BoilError};
 use defaults::default_config;
 use project::{create_program, create_project};
 use table::BoilTable;
+use utils::{print_color, colorize, user_input};
 
 
 #[derive(Debug, Default)]
@@ -52,20 +53,50 @@ impl Boil {
             Commands::New(c) => self.add_new(c)?,
             Commands::Edit(c) => self.edit(c)?,
             Commands::List(c) => self.list(c)?,
-            Commands::Remove(c) => self.remove(c)?
+            Commands::Remove(c) => self.remove(c)?,
+            _ => {}
         };
 
         Ok(())
     }
 
-    pub fn init(&self) -> BoilResult<()> {
+    pub fn init(args: InitArgs) -> BoilResult<()> {
         let cfg_path = default_config()?;
 
-        if cfg_path.try_exists()? {
-            return todo!()
+        if !args.force && cfg_path.try_exists()? {
+            return Err(BoilError::ConfigExists(cfg_path.to_str().unwrap().to_owned()))
         }
 
+        if let Some(parent) = cfg_path.parent() {
+            if !parent.try_exists()? {
+                fs::create_dir_all(parent)?;
+            };
+        } else {
+            return Err(BoilError::ConfigCreate)
+        };
 
+        let res = user_input(colorize!(b->"Create new boil config at ", bFg->cfg_path.to_str().unwrap(), b->" - [y/N]"))?;
+
+        if !res {
+            return Ok(())
+        };
+
+        let config = Config::from(&cfg_path)?;
+        config.write(&cfg_path)?;
+
+        let mut env_path = cfg_path.clone();
+        env_path.set_file_name(".env");
+
+        let mut env = fs::File::create(&env_path)?;
+        env.write_all(
+            format!(
+                "BOIL_DEF_CONFIG={}\nBOIL_PROJ_PATH={}",
+                cfg_path.to_string_lossy(),
+                config.defaults.proj_path.to_string_lossy()
+            ).as_bytes()
+        )?;
+
+        print_color!(Fgb->"Successfully created new boil config");
 
         Ok(())
     }
