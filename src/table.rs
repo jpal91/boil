@@ -126,7 +126,7 @@ impl BoilTable {
             for opt in self.opts.list_args.iter() {
                 let o = match opt {
                     ListOpts::Name => Cell::new(&capitalize!(e.name.to_owned())).style_spec("Fbb"),
-                    ListOpts::Description => Cell::new(e.description.as_ref().unwrap()),
+                    ListOpts::Description => Cell::new(e.description.as_ref().unwrap_or(&String::from("None"))),
                     ListOpts::Path => Cell::new(e.path.to_str().unwrap()).style_spec("b"),
                     ListOpts::Project => {
                         if e.project {

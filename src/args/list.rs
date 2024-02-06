@@ -66,7 +66,7 @@ pub struct SortOpt(pub ListOpts, pub u8);
 #[derive(Clone, Debug, PartialEq)]
 pub struct FilterOpt(pub ListOpts, pub u8, pub String);
 
-#[derive(Args, Debug, PartialEq)]
+#[derive(Args, Debug, PartialEq, Clone)]
 pub struct ListArgs {
     /// A comma delimited list of fields to show in the resulting list of programs
     #[arg(long, value_delimiter=',', require_equals=true, default_value="name,project,type,description,tags", long_help=FORMAT_LH)]
@@ -79,6 +79,10 @@ pub struct ListArgs {
     /// A comma delimited list of (value:expression:field) to filter the resulting list
     #[arg(long, value_delimiter=',', require_equals=true, value_parser=parse_filter, long_help=FILTER_LH)]
     pub filter: Option<Vec<FilterOpt>>,
+
+    /// Show the last added temp file
+    #[arg(short, long)]
+    pub temp: bool
 }
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy, Debug)]
@@ -151,7 +155,8 @@ mod tests {
             Commands::List(ListArgs {
                 format,
                 sort,
-                filter
+                filter,
+                temp: false
             })
         )
     }

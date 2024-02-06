@@ -125,7 +125,10 @@ impl Boil {
 
         let program = Program { name, description, project, prog_type, path, tags };
 
+        let name = program.name.to_owned();
         self.config_mut().insert(program.name.to_owned(), program);
+
+        print_color!(Fgb->"Successfully added", b->&name, Fgb->"to config");
 
         Ok(())
     }
@@ -154,9 +157,12 @@ impl Boil {
         };
 
         if !args.temp {
-            self.config_mut().insert(program.name.to_owned(), program);
+            let name = program.name.to_owned();
+            self.config_mut().insert(name.to_owned(), program);
+            print_color!(Fgb->"Successfully added", b->&name, Fgb->"to config")
         } else {
-            self.config.temp = Temp{ path: program.path }
+            println!("{}", &program.path.to_string_lossy());
+            self.config.temp = program
         }
 
         Ok(())
@@ -246,19 +252,28 @@ impl Boil {
         if let Some(p) = args.eopts.prog_type {
             entry.prog_type = ProgType::from_string(&p);
         }
+
+        print_color!(Fgb->"Successfully updated", b->args.name.as_str());
         Ok(())
     }
 
     fn list(&self, mut args: ListArgs) -> BoilResult<()> {
+        let temp = args.temp;
+        if temp {
+            println!("{}", self.config.temp.path.to_string_lossy());
+            return Ok(())
+        }
         let mut table = BoilTable::from_args(args)?;
         table.display(self.config.values());
+        
+        
         Ok(())
     }
 
     fn remove(&mut self, mut args: RemoveArgs) -> BoilResult<()> {
         if !args.force {
             let mut input = String::new();
-            print!("Are you sure you wish to remove {} - [y/N]: ", args.name);
+            print!("Are you sure you wish to remove {} - [y/N]: ", &args.name);
             io::stdout().flush();
             io::stdin().read_line(&mut input)?;
             
@@ -267,7 +282,9 @@ impl Boil {
             }
         }
 
-        self.config.remove(args.name)?;
+        self.config.remove(args.name.to_owned())?;
+
+        print_color!(Fgb->"Successfully removed", b->&args.name, Fgb->"from config");
         Ok(())
     }
 

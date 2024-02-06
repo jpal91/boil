@@ -20,7 +20,7 @@ pub struct Config {
     pub defaults: DefCfg,
 
     #[serde(default)]
-    pub temp: Temp
+    pub temp: Program
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -40,7 +40,7 @@ pub type ProgMap = HashMap<String, Program>;
 #[derive(Serialize, Deserialize, Default, Debug)]
 pub struct Programs(pub ProgMap);
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct Program {
     pub name: String,
     pub project: bool,
