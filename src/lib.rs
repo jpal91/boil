@@ -13,7 +13,6 @@ use std::fs::{self, metadata};
 use std::path::{Path, PathBuf};
 use std::io::{self, Write};
 
-use dirs;
 use serde::{Deserialize, Serialize};
 
 use config::{Config, Program, ProgMap, Temp, ProgType};
@@ -70,12 +69,12 @@ impl Boil {
             return Err(BoilError::ConfigExists(cfg_path.to_str().unwrap().to_owned()))
         }
 
-        let res: bool;
-        if !args.test && !args.force {
-            res = user_input(colorize!(b->"Create new boil config at ", bFg->cfg_path.to_str().unwrap(), b->" - [y/N]"))?;
+
+        let res: bool = if !args.test && !args.force {
+            user_input(colorize!(b->"Create new boil config at ", bFg->cfg_path.to_str().unwrap(), b->" - [y/N]"))?
         } else {
-            res = true
-        }
+            true
+        };
 
         if !res {
             return Ok(())
@@ -112,7 +111,7 @@ impl Boil {
             return Err(BoilError::NameExists(name))
         }
         
-        let project = match metadata(path.to_owned())?.file_type() {
+        let project = match metadata(&path)?.file_type() {
             f if f.is_dir() => true,
             f if f.is_file() => false,
             _ => return Err(BoilError::InvalidPath(path.to_owned()))
@@ -192,7 +191,7 @@ impl Boil {
                     dir_path = p.to_path_buf();
                 } else {
                     dir_path = self.config.defaults.proj_path.to_owned();
-                    dir_path.push(p.to_path_buf());
+                    dir_path.push(p);
                 }
                 dir_path
             },

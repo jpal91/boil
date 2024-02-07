@@ -117,7 +117,7 @@ impl BoilTable {
         };
 
         if let Some(f) = &self.opts.filter_args {
-            entries = entries.into_iter().filter(|p| check_filter(p, f)).collect()
+            entries.retain(|p| check_filter(p, f))
         };
 
         for e in entries.iter() {
@@ -170,7 +170,7 @@ fn get_sort_key(prog: &Program, sort_opt: &Vec<SortOpt>) -> SortKey {
                 if opt.1 == 0 {
                     *b as i8
                 } else {
-                    (*b as i8) * -1
+                    -(*b as i8)
                 }
             })
             .collect();
@@ -181,7 +181,7 @@ fn get_sort_key(prog: &Program, sort_opt: &Vec<SortOpt>) -> SortKey {
     key_order
 }
 
-fn check_filter(prog: &Program, filter_opts: &Vec<FilterOpt>) -> bool {
+fn check_filter(prog: &Program, filter_opts: &[FilterOpt]) -> bool {
     for f in filter_opts.iter() {
         let mut case_sensitive = false;
 
@@ -195,23 +195,21 @@ fn check_filter(prog: &Program, filter_opts: &Vec<FilterOpt>) -> bool {
             f => f.to_lowercase().as_bytes().into(),
         };
 
-        let prog_val: Vec<u8>;
-
-        if case_sensitive {
-            prog_val = prog.vals_to_bytes(&f.0);
+        let prog_val: Vec<u8> = if case_sensitive {
+            prog.vals_to_bytes(&f.0)
         } else {
-            prog_val = prog
+            prog
                 .vals_to_bytes(&f.0)
                 .into_iter()
                 .map(|v| v.to_ascii_lowercase())
-                .collect();
-        }
+                .collect()
+        };
 
         let res = match f.1 {
             0 => prog_val == check_val,
             1 => prog_val != check_val,
-            2 => prog_val.windows(check_val.len()).any(|w| w == &check_val),
-            3 => !prog_val.windows(check_val.len()).any(|w| w == &check_val),
+            2 => prog_val.windows(check_val.len()).any(|w| w == check_val),
+            3 => !prog_val.windows(check_val.len()).any(|w| w == check_val),
             req @ (4 | 5) => {
                 let vals = &mut check_val.split(|&num| num == b'+');
 

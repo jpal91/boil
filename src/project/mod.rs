@@ -1,7 +1,7 @@
 use std::fs;
 use std::process::Command;
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use crate::config::ProgType;
 use crate::error::BoilResult;
 
@@ -50,7 +50,7 @@ fn create_python_proj(path: &PathBuf) -> BoilResult<()> {
     Ok(())
 }
 
-fn create_rust_project(path: &PathBuf) -> BoilResult<()> {
+fn create_rust_project(path: &Path) -> BoilResult<()> {
     Command::new("cargo")
         .args(["new", path.to_str().unwrap()])
         .output()?;

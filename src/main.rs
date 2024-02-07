@@ -4,7 +4,6 @@ use std::env;
 use std::path::{PathBuf, Path};
 
 use clap::Parser;
-use dirs;
 use dotenv::dotenv;
 
 use boil::Boil;
@@ -19,18 +18,17 @@ fn main() -> ExitCode {
         println!("{:?}", args);
     }
 
-    match args.command {
-        Commands::Init(a) => {
-            match Boil::init(a, args.cfg_path) {
-                Ok(_) => return ExitCode::SUCCESS,
-                Err(e) => {
-                    eprintln!("boil error: {e}");
-                    return ExitCode::FAILURE
-                }
+
+    if let Commands::Init(a) = args.command {
+        match Boil::init(a, args.cfg_path) {
+            Ok(_) => return ExitCode::SUCCESS,
+            Err(e) => {
+                eprintln!("boil error: {e}");
+                return ExitCode::FAILURE
             }
-        },
-        _ => {}
-    }
+        }
+    };
+
 
     let mut boil = match Boil::from(args.cfg_path) {
         Ok(b) => b,

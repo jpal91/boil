@@ -4,7 +4,6 @@ use std::path::PathBuf;
 use std::collections::hash_map::Iter;
 
 use serde::{Deserialize, Serialize};
-use toml;
 use prettytable::{Table, Row, Cell, row};
 
 use crate::error::{BoilError, BoilResult};
@@ -92,13 +91,13 @@ impl Program {
             ListOpts::Description => self
                 .description
                 .clone()
-                .unwrap_or(String::new())
+                .unwrap_or_default()
                 .as_bytes()
                 .to_vec(),
             ListOpts::Tags => self
                 .tags
                 .clone()
-                .unwrap_or(vec![])
+                .unwrap_or_default()
                 .iter()
                 .flat_map(|f| f.as_bytes().to_owned())
                 .collect(),

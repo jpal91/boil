@@ -1,6 +1,6 @@
 use clap::Args;
 
-const FORMAT_LH: &'static str = "\
+const FORMAT_LH: &str = "\
 A comma delimited list of fields to show in the resulting list of programs.
 
 Values:
@@ -16,7 +16,7 @@ Example:
     boil list --format=n,project,T
 ";
 
-const SORT_LH: &'static str = "\
+const SORT_LH: &str = "\
 A comma delimited list of (field, (asc|desc)?) to sort the resulting list.
 
 Refer to format arg for more information on field identifiers. 
@@ -32,7 +32,7 @@ Examples:
     boil list --sort=P,1,t,name,0
 ";
 
-const FILTER_LH: &'static str = "\
+const FILTER_LH: &str = "\
 A comma delimited list of (value:expression:field) to filter the resulting list.
 
 Refer to format arg for more information on field identifiers. 
@@ -99,7 +99,7 @@ fn parse_filter(inp: &str) -> Result<FilterOpt, String> {
     let mut args = inp.split(':');
 
     if args.clone().count() != 3 {
-        return Err(format!("Input must be in format value:expression:field"));
+        return Err(String::from("Input must be in format value:expression:field"));
     }
 
     let val = args.next().unwrap().to_string();
@@ -107,8 +107,8 @@ fn parse_filter(inp: &str) -> Result<FilterOpt, String> {
     let exp = match args.next().unwrap() {
         "eq" | "equals" => 0,
         "ne" | "nequals" | "neq" => 1,
-        "in" if !val.contains("+") => 2,
-        "nin" | "notin" if !val.contains("+") => 3,
+        "in" if !val.contains('+') => 2,
+        "nin" | "notin" if !val.contains('+') => 3,
         "in" => 4,
         "nin" | "notin" => 5,
         f => return Err(format!("'{}' is not a valid option for 'expression'", f)),
