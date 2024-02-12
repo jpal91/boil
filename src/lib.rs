@@ -135,16 +135,6 @@ impl Boil {
     fn add_new(&mut self, args: NewArgs) -> BoilResult<()>{
         let program: Program = self.parse_new(&args)?;
 
-        // if program.project {
-        //     if let Some(p) = program.path.parent() {
-        //         if p.try_exists()? {
-        //             return Err(BoilError::PathExists(p.to_path_buf()))
-        //         }
-        //     } else {
-        //         return Err(BoilError::PathExists(program.path))
-        //     }
-        // }
-
         if !program.path.try_exists()? {
             if program.project {
                 create_project(&program.path, &program.prog_type)?;
