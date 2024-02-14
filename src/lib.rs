@@ -21,7 +21,8 @@ use error::{BoilResult, BoilError};
 use defaults::default_config;
 use project::{create_program, create_project};
 use table::BoilTable;
-use utils::{print_color, colorize, user_input};
+use utils::user_input;
+use colorize::{print_color, colorize};
 
 
 #[derive(Debug, Default)]
