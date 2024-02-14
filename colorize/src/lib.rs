@@ -1,7 +1,8 @@
-pub fn color_str(input: &str, tag: &str) -> String {
+pub fn color_str<T: std::fmt::Debug>(input: T, tag: &str) -> String {
     let mut it = tag.chars().peekable();
     let mut attr: Vec<&str> = vec![];
     let mut newline = "";
+    let input = format!("{:?}", input).replace("\"", "");
 
     while let Some(m) = it.next() {
         match m {
@@ -77,14 +78,14 @@ macro_rules! colorize {
 
     ( [ $($acc:tt)* ]; $tag:ident -> $msg:expr, $($rest:tt)* ) => {
         {
-            let color = $crate::color_str($msg, stringify!($tag));
+            let color = $crate::color_str( $msg , stringify!($tag));
             colorize!([ $($acc)* color, ]; $($rest)* )
         }
     };
 
     ( [ $($acc:tt)* ]; $msg:expr, $($rest:tt)* ) => {colorize!([$($acc)* $msg.to_string() ,]; $($rest)*)};
 
-    ( [ $($acc:tt)* ]; $tag:ident -> $msg:expr ) => {colorize!([$($acc)*]; $tag -> &format!("{:?}", $msg),)};
+    ( [ $($acc:tt)* ]; $tag:ident -> $msg:expr ) => {colorize!([$($acc)*]; $tag -> $msg , )};
 
     ( [ $($acc:tt)* ]; $msg:expr ) => {colorize!([$($acc)* $msg.to_string() ,]; )};
 
@@ -124,7 +125,7 @@ mod tests {
     fn test_path_buf() {
         use std::path::PathBuf;
         let path = PathBuf::from_str("some").unwrap();
-        let col = colorize!(Fgb->path);
+        let col = colorize!(b->"Moving", Fgb->path, b->"to");
         println!("{}", col);
     }
 
