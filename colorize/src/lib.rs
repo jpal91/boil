@@ -84,7 +84,7 @@ macro_rules! colorize {
 
     ( [ $($acc:tt)* ]; $msg:expr, $($rest:tt)* ) => {colorize!([$($acc)* $msg.to_string() ,]; $($rest)*)};
 
-    ( [ $($acc:tt)* ]; $tag:ident -> $msg:expr ) => {colorize!([$($acc)*]; $tag -> $msg,)};
+    ( [ $($acc:tt)* ]; $tag:ident -> $msg:expr ) => {colorize!([$($acc)*]; $tag -> &format!("{:?}", $msg),)};
 
     ( [ $($acc:tt)* ]; $msg:expr ) => {colorize!([$($acc)* $msg.to_string() ,]; )};
 
@@ -104,6 +104,8 @@ macro_rules! print_color {
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
+
     use super::*;
 
     #[test]
@@ -116,6 +118,14 @@ mod tests {
     fn test_colorize() {
         let col = colorize!(Fgb->"hello again", N->"hello", "and", FrFb->"goodbye", "again" );
         println!("{}", col)
+    }
+
+    #[test]
+    fn test_path_buf() {
+        use std::path::PathBuf;
+        let path = PathBuf::from_str("some").unwrap();
+        let col = colorize!(Fgb->path);
+        println!("{}", col);
     }
 
 }
