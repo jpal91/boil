@@ -79,7 +79,7 @@ checksum = "ed570934406eb16438a4e976b1b4500774099c13b8cb96eec99f620f05090ddf"
 
 [[package]]
 name = "boil"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "clap",
  "colorize",

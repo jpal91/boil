@@ -1,7 +1,7 @@
 workspace = { members = ["colorize"] }
 [package]
 name = "boil"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -27,3 +27,6 @@ colorize = { path = "colorize" }
 [dev-dependencies]
 rstest = "0.18.2"
 tempfile = "3.10.0"
+
+[profile.release]
+strip = true
