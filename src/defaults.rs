@@ -24,7 +24,17 @@ pub fn default_proj_path() -> PathBuf {
 
         path
     } else if let Some(home) = dirs::home_dir() {
-        let path: PathBuf = [home.as_path(), Path::new("dev")].iter().collect();
+        let path: PathBuf = PathBuf::from_iter([home.as_path(), Path::new("dev")]);
+
+        path
+    } else {
+        panic!()
+    }
+}
+
+pub fn default_bin_path() -> PathBuf {
+    if let Some(home) = dirs::home_dir() {
+        let path: PathBuf = PathBuf::from_iter([home.as_path(), Path::new("bin")]);
 
         path
     } else {

@@ -148,8 +148,10 @@ impl Boil {
 
         if !args.temp {
             let name = program.name.to_owned();
+            let path = program.path.clone();
             self.config_mut().insert(name.to_owned(), program);
-            print_color!(Fgb->"Successfully added", b->&name, Fgb->"to config")
+            print_color!(Fgb->"Successfully added", b->&name, Fgb->"to config");
+            println!("{}", path.to_string_lossy());
         } else {
             println!("{}", &program.path.to_string_lossy());
             self.config.temp = program
@@ -181,7 +183,11 @@ impl Boil {
                 if p.is_absolute() {
                     dir_path = p.to_path_buf();
                 } else {
-                    dir_path = self.config.defaults.proj_path.to_owned();
+                    if proj {
+                        dir_path = self.config.defaults.proj_path.to_owned();
+                    } else {
+                        dir_path = self.config.defaults.bin_path.to_owned();
+                    }
                     dir_path.push(p);
                 }
                 dir_path
@@ -191,7 +197,7 @@ impl Boil {
                 dir_path.push(Path::new(&name));
                 dir_path
             },
-            (false, false, None) => self.config.defaults.proj_path.to_owned()
+            (false, false, None) => self.config.defaults.bin_path.to_owned()
         };
         
         let prog_type = match &args.prog_type {

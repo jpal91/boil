@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use prettytable::{Table, Row, Cell, row};
 
 use crate::error::{BoilError, BoilResult};
-use crate::defaults::default_proj_path;
+use crate::defaults::{default_bin_path, default_proj_path};
 use crate::args::ListOpts;
 
 #[derive(Serialize, Deserialize, Default, Debug)]
@@ -24,7 +24,8 @@ pub struct Config {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct DefCfg {
-    pub proj_path: PathBuf
+    pub proj_path: PathBuf,
+    pub bin_path: PathBuf
 }
 
 /// Object representing the last file/project added
@@ -74,7 +75,8 @@ pub enum Field {
 impl Default for DefCfg {
     fn default() -> Self {
         Self {
-            proj_path: default_proj_path()
+            proj_path: default_proj_path(),
+            bin_path: default_bin_path()
         }
     }
 }
