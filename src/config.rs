@@ -137,7 +137,7 @@ impl Config {
 
         if path.try_exists().unwrap_or(false) {
             let content = fs::read_to_string(path)?;
-            config = toml::from_str(&content).unwrap_or_default();
+            config = toml::from_str(&content)?;
         } else {
             return Err(BoilError::NeedInit)
         }

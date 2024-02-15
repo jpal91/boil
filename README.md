@@ -2,6 +2,8 @@
 
 A project written in Rust to assist in keeping track of user generated scripts, and generate boilerplate code more easily. The idea being that you have a one stop shop to keep track of your current projects or a place to store info about programs already on your computer for you to reference back to or simply create a new script/project more easily.
 
+![](assets/boil.png)
+
 ## Installation
 ```bash
 git clone https://github.com/jpal91/boil
