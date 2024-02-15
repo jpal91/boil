@@ -52,11 +52,11 @@ boil remove my-python-proj
 
 Currently the project is in development, but is usable. Future goals are -
 
-- [] Make `boil` more language agnostic, currently it only accepts 3 different program types (python, rust, bash)
-- [] Integrate another crate for programming language detection on add
-- [] Add ability to customize boilerplate code and/or default documents added to projects (ie custom .gitignore, LICENSE, etc.)
-- [] Friendlier user interface for adding/creating (maybe a TUI implementation)
-- [] Integrate an `info` command which could further integrate the commands help function, docstrings, and/or [cheats.sh](https://github.com/chubin/cheat.sh)
+- [ ] Make `boil` more language agnostic, currently it only accepts 3 different program types (python, rust, bash)
+- [ ] Integrate another crate for programming language detection on add
+- [ ] Add ability to customize boilerplate code and/or default documents added to projects (ie custom .gitignore, LICENSE, etc.)
+- [ ] Friendlier user interface for adding/creating (maybe a TUI implementation)
+- [ ] Integrate an `info` command which could further integrate the commands help function, docstrings, and/or [cheats.sh](https://github.com/chubin/cheat.sh)
 
 ## Special Thanks
 
